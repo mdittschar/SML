@@ -23,7 +23,7 @@ var(ozone)
 
 linear_model = lm(ozone~radiation+temperature+wind, ozone[testset,])
 ozone_predict = predict(linear_model, ozone[testset,])
-mse(ozone[testset,]["ozone"],ozone_predict)
+linear_mse = mse(ozone[testset,]["ozone"],ozone_predict)
 cor(ozone["ozone"][testset,],ozone_predict)
 x_axis = ozone["ozone"][testset,]
 plot(x_axis,ozone_predict, xlab="real ozone values", ylab="predicted ozone values")
@@ -43,3 +43,6 @@ for (val in seq(1,30)){
 
 plot(seq(1,30), mses, xlab="k (k-nearest-neighbors)", ylab="MSE test set")
 plot(seq(1,30), mses_train, xlab="k (k-nearest-neighbors)", ylab="MSE train set")
+ordered_mse = order(mses)
+print(paste0("Optimal MSE for kNN: ", mses[8]))
+print(paste0("MSE for linear regression: ", linear_mse))
