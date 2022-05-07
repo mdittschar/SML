@@ -8,18 +8,22 @@ mse=function(arr, arr_pred){
   mse = weight*sum_err
   print(mse)
     }
-
-load("ozone.RData")
-summary(trainset)
-range(trainset)
+#b) 
+load("ozone.RData") #Download Data
+summary(trainset) # Inspect the structure of the data
+range(trainset) 
 colnames(ozone)
 length(trainset)
 summary(testset)
 length(testset)
-summary(ozone)
-pairs(ozone)
-cor(ozone, ozone)
+# here we see e.g. the colnames without having to call them separately
+summary(ozone) 
+# c) 
+pairs(ozone) #create scatterplots
+cor(ozone, ozone) # calculate correlation coefficients
 var(ozone)
+
+# for d see 
 
 linear_model = lm(ozone~radiation+temperature+wind, ozone[testset,])
 ozone_predict = predict(linear_model, ozone[testset,])
