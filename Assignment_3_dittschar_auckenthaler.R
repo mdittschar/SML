@@ -25,24 +25,39 @@ summary(model.MLR)
 
 
 #Task 2e
-#residual plots
+
+#studentized residual plots
+par(mfrow=c(1,1))
 plot ( predict (model.MLR), residuals (model.MLR))
-plot ( hatvalues (model.MLR))
-which.max(hatvalues (model.MLR))
-#residual vs Leverage plot
+
+#plot ( hatvalues (model.MLR))
+#which.max(hatvalues (model.MLR))
+
+#residual plots of multi regression model 
+par(mfrow=c(2,2))
 plot(lm(formula = mpg ~ . - name,data=Auto))
 
 #Task 2f
-model.2f1 = lm(formula = mpg ~ cylinders*year + log(displacement), data = Auto)
+#model 1
+model.2f1 = lm(formula = mpg ~ cylinders*year + cylinders*weight+ weight*year+ log(displacement), data = Auto)
 summary(model.2f1)
 
-model.2f2 = lm(formula = mpg ~ cylinders*weight + I(displacement^2), data = Auto)
+#model 2
+model.2f2 = lm(formula = mpg ~ cylinders*year + cylinders*weight+ weight*year+ + I(displacement^2), data = Auto)
 summary(model.2f2)
 
-model.2f3 = lm(formula = mpg ~ weight*year + sqrt(displacement), data = Auto)
+#model 3
+model.2f3 = lm(formula = mpg ~ cylinders*year + cylinders*weight+ weight*year+ sqrt(displacement), data = Auto)
 summary(model.2f3)
-
+#plot model 1 2f
+par(mfrow=c(2,2))
 plot(model.2f1)
+
+#plot model 2 2f
+par(mfrow=c(2,2))
 plot(model.2f2)
+
+#plot model 3 2f
+par(mfrow=c(2,2))
 plot(model.2f3)
 
