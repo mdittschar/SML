@@ -35,7 +35,7 @@ test.fit <-subset(subset.test, select = -c(row.names,speaker))
 
 #transform values to numeric values
 train.fit$g <- as.numeric(train.fit$g)
-test.fit$g <- as.numeric(train.fit$g)
+test.fit$g <- as.numeric(test.fit$g)
 #fit logistic regression model
 glm.fits <- glm (g~. , data= train.fit, family = binomial)
 #summary(glm.fits)
@@ -43,8 +43,12 @@ glm.fits <- glm (g~. , data= train.fit, family = binomial)
 # NOT CORRECT!!!!
 #------
 glm.probs <- predict (glm.fits, test.fit, type="response")
-glm.pred <- rep ("aa", 439)
-glm.pred[glm.probs > .5] <- "ao"
+glm.pred <- rep ("0", 439)
+glm.pred[glm.probs > .5] <- "1"
+table(glm.pred)
+#mean (glm.pred == 'aa')
+#mean (glm.pred == 'ao')
+mean (glm.pred == test.fit$g)
 #------------------
 # Task 2c)  LDA
 #-------------------
@@ -55,11 +59,17 @@ names (lda.pred)
 lda.class <- lda.pred$class
 # print number of values above trashhold
 sum (lda.pred$posterior[, 1] >= .5)
+table(lda.class)
+mean (lda.class == test.fit$g)
+
+#comparison with 
+table(test.fit$g)
 #MISSING COMPARE VALUE COUNTS!!
 
 #------------------
 # Task 2d)  Generate confusion matrices
 #-------------------
+table(glm.pred , lda.class)
 
 #------------------
 # Task 2e)  plot ROC and PR curves
