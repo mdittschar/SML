@@ -38,7 +38,7 @@ train.fit$g <- as.numeric(train.fit$g)
 test.fit$g <- as.numeric(test.fit$g)
 #fit logistic regression model
 glm.fits <- glm (g~. , data= train.fit, family = binomial)
-#summary(glm.fits)
+summary(glm.fits)
 #-------- 
 # NOT CORRECT!!!!
 #------
@@ -57,7 +57,8 @@ lda.fit <- lda (g ~., data= train.fit)
 lda.pred <- predict (lda.fit , test.fit)
 names (lda.pred)
 lda.class <- lda.pred$class
-# print number of values above trashhold
+# print number of values above treshold
+sum (lda.pred$posterior[, 2] >= .5)
 sum (lda.pred$posterior[, 1] >= .5)
 table(lda.class)
 mean (lda.class == test.fit$g)
@@ -75,9 +76,16 @@ table(glm.pred , lda.class)
 # Task 2e)  plot ROC and PR curves
 #-------------------
 library(PRROC)
+plot(roc.curve(scores.class0=lda.pred$posterior[,2], weights.class0=test.fit$g, 
+               curve=TRUE))
+plot(pr.curve(scores.class0=lda.pred$posterior[,2], weights.class0=test.fit$g, 
+               curve=TRUE))
+plot(roc.curve(scores.class0=glm.probs, weights.class0=test.fit$g, 
+               curve=TRUE))
+plot(pr.curve(scores.class0=glm.probs, weights.class0=test.fit$g, 
+               curve=TRUE))
 
 #------------------
 # Task 2f) LDA on full training data set
 #------------------
-
 
