@@ -38,17 +38,16 @@ train.fit$g <- as.numeric(train.fit$g)
 test.fit$g <- as.numeric(test.fit$g)
 #fit logistic regression model
 glm.fits <- glm (g~. , data= train.fit, family = binomial)
-summary(glm.fits)
-#-------- 
-# NOT CORRECT!!!!
-#------
+#summary(glm.fits)
+
 glm.probs <- predict (glm.fits, test.fit, type="response")
 glm.pred <- rep ("0", 439)
 glm.pred[glm.probs > .5] <- "1"
 table(glm.pred)
-#mean (glm.pred == 'aa')
-#mean (glm.pred == 'ao')
-mean (glm.pred == test.fit$g)
+
+#calculate accuracy
+acc.glm= mean (glm.pred == test.fit$g)
+print(acc.glm)
 #------------------
 # Task 2c)  LDA
 #-------------------
@@ -61,16 +60,19 @@ lda.class <- lda.pred$class
 sum (lda.pred$posterior[, 2] >= .5)
 sum (lda.pred$posterior[, 1] >= .5)
 table(lda.class)
-mean (lda.class == test.fit$g)
+#calculate accuracy
+acc.lda= mean (lda.class == test.fit$g)
+print(acc.lda)
 
 #comparison with 
 table(test.fit$g)
-#MISSING COMPARE VALUE COUNTS!!
 
 #------------------
 # Task 2d)  Generate confusion matrices
 #-------------------
 table(glm.pred , lda.class)
+table(glm.pred , test.fit$g)
+table(lda.class , test.fit$g)
 
 #------------------
 # Task 2e)  plot ROC and PR curves
