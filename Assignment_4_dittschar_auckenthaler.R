@@ -45,7 +45,13 @@ glm.pred <- rep ("0", 439)
 glm.pred[glm.probs > .5] <- "1"
 table(glm.pred)
 
-#calculate accuracy
+#calculate train accuracy 
+glm.probs.train <- predict (glm.fits, train.fit, type="response")
+glm.pred.train <- rep ("0", 1278)
+glm.pred.train[glm.probs.train > .5] <- "1"
+mean (glm.pred.train == train.fit$g)
+
+#calculate test accuracy
 acc.glm= mean (glm.pred == test.fit$g)
 print(acc.glm)
 #------------------
@@ -60,7 +66,12 @@ lda.class <- lda.pred$class
 sum (lda.pred$posterior[, 2] >= .5)
 sum (lda.pred$posterior[, 1] >= .5)
 table(lda.class)
-#calculate accuracy
+#calculate train accuracy
+lda.pred.train <- predict (lda.fit , train.fit)
+names (lda.predtrain)
+lda.class.train <- lda.pred.train$class
+mean (lda.class.train == train.fit$g)
+#calculate test accuracy
 acc.lda= mean (lda.class == test.fit$g)
 print(acc.lda)
 
