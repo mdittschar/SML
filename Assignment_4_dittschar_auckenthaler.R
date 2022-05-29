@@ -88,4 +88,17 @@ plot(pr.curve(scores.class0=glm.probs, weights.class0=test.fit$g,
 #------------------
 # Task 2f) LDA on full training data set
 #------------------
-
+# get the train data without row names and speaker
+all_train.fit <- subset(train.data, select = -c(row.names,speaker))
+all_test.fit <- subset(test.data, select = -c(row.names,speaker))
+# fit lda on train data
+all_lda.fit <- lda (g ~., data= all_train.fit)
+# get predictions for training and test data
+all_train_pred <- predict(all_lda.fit, train.data, type="response")
+all_test_pred <- predict(all_lda.fit, test.data, type="response")
+# get train and test accuracy
+mean(all_train_pred$class == train.data$g)
+mean(all_test_pred$class == test.data$g)
+# get confusion matrices
+table(all_train_pred$class, train.data$g)
+table(all_test_pred$class, test.data$g)
