@@ -4,7 +4,7 @@ library(MASS)
 # a)
 #----------------------
 #load data 
-data <- read.table("prostate.txt")
+data <- read.table("./prostate.txt")
 
 # normalization over column 1 to 8 
 for(i in 1:8 ){ 
@@ -19,6 +19,13 @@ test <- data [data$train == FALSE, ]
 # b) LOOCV, 5- and 10-fold cross-validation on the training data set
 #----------------------
 library (boot)
+
+#CHECK IT AGAIN!!!!
+
+k.5<-5
+n.5<- nrow(data)
+
+
 
 #5-fold cross-calidation on training data
 set.seed (1)
