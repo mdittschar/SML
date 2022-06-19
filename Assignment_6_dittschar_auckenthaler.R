@@ -29,7 +29,7 @@ set.seed (1)
 # test.mat <- model.matrix (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train)
 
 glm.fit <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-cv.error.loocv <- cv.glm (train , glm.fit)$delta
+cv.error.loocv <- cv.glm (train , glm.fit)$delta[1]
 cv.error.loocv
 #5-fold cross-calidation on training data
 # val.errors <- rep (0, 8)
@@ -43,7 +43,7 @@ cv.error.loocv
 set.seed (1)
 
 glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-cv.error.5 <- cv.glm (train , glm.fit.5 , K = 5)$delta
+cv.error.5 <- cv.glm (train , glm.fit.5 , K = 5)$delta[1]
 cv.error.5
 # reg.best.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
 #                           nvmax = 8)
@@ -89,7 +89,7 @@ cv.error.5
 
 
 glm.fit.10 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-cv.error.10 <- cv.glm (train , glm.fit.10 , K = 10)$delta
+cv.error.10 <- cv.glm (train , glm.fit.10 , K = 10)$delta[1]
 
 cv.error.10
 #set.seed (1)
@@ -102,6 +102,8 @@ cv.error.10
 
 
 glm.fit.train <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+glm.linear.pred <- predict(glm.fit.train, test)
+mean((test$lpsa - glm.linear.pred) ^ 2)
 #Linear regression 
 set.seed(1)
 lm.fit.train.lr <- lm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
