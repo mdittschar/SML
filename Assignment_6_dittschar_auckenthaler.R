@@ -44,7 +44,7 @@ cv.errors.5 <- matrix (NA, k.5, 8,
                      dimnames = list (NULL , paste (1:8)))
 for (j in 1:k.5) {
   best.fit.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
-                            nvmax = 8)#
+                            nvmax = 8)
   
   for (i in 1:8) {
     coefi <- coef(best.fit.5, id= i)
@@ -56,6 +56,10 @@ mean.cv.errors.5 <- apply (cv.errors.5 , 2, mean)
 mean.cv.errors.5
 par (mfrow = c(1, 1))
 plot (mean.cv.errors.5 , type = "b")
+
+reg.best.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+                          nvmax = 8)
+coef(reg.best.5,1)
 
 k.10<-10
 n<- nrow(train)
@@ -79,6 +83,9 @@ mean.cv.errors.10
 par (mfrow = c(1, 1))
 plot (mean.cv.errors.10 , type = "b")
 
+reg.best.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+                          nvmax = 8)
+coef(reg.best.10,1)
 
 #5-fold cross-calidation on training data
 #set.seed (1)
