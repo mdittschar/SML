@@ -21,16 +21,15 @@ test <- data [data$train == FALSE, ]
 #----------------------
 library (boot)
 library( leaps)
-#NOT NEEDED INSIDE HERE--------------------------------
 
-#Linear regression 
+
+#LOOVV
 set.seed (1)
 glm.fit <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 cv.error.loocv <- cv.glm (train , glm.fit)$delta[1]
 #MSE
 cv.error.loocv
 
-#--------------------------------------------------
 #5-fold cross-calidation on training data
 set.seed (1)
 
@@ -67,7 +66,8 @@ mean((test$lpsa - predict.lm(lm.fit.train.lr, test)) ^ 2)
 glm.fit.pred <- predict(glm.fit.train, test)
 
 mean((test$lpsa - glm.fit.pred)^2)
-
+#coefficient 
+coef(lm.fit.train.lr)
 
 #---------------------------
 # c) fit ridge regression model
@@ -135,7 +135,7 @@ best.lamdba.l
 # find coefficients to best lambda model
 out <- glmnet(x.train, y.train, alpha=1, lambda = grid)
 
-lasso.coef <- predict(out, type="coefficients", s=best.lamdba.l)
+lasso.coef <- predict(lasso.mod, type="coefficients", s=best.lamdba.l)
 #train set MSE
 lasso.pred.train <- predict (lasso.mod , s = best.lamdba.l ,
                              newx = x.train) 
