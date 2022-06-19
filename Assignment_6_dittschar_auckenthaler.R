@@ -136,6 +136,7 @@ best.lamdba.l
 out <- glmnet(x.train, y.train, alpha=1, lambda = grid)
 
 lasso.coef <- predict(lasso.mod, type="coefficients", s=best.lamdba.l)
+lasso.coef
 #train set MSE
 lasso.pred.train <- predict (lasso.mod , s = best.lamdba.l ,
                              newx = x.train) 
