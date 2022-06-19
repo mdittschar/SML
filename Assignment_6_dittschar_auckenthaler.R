@@ -25,78 +25,55 @@ library( leaps)
 #CHECK IT AGAIN!!!!
 #NOT NEEDED INSIDE HERE--------------------------------
 set.seed (1)
-regfit.best <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train, nvmax = 8)
-test.mat <- model.matrix (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train)
+# regfit.best <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train, nvmax = 8)
+# test.mat <- model.matrix (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train)
 
-#k.5<-5
-#n.5<- nrow(data)
 glm.fit <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 cv.error.loocv <- cv.glm (train , glm.fit)$delta
 cv.error.loocv
 #5-fold cross-calidation on training data
-val.errors <- rep (0, 8)
-for (i in 1:8) {
-  coefi <- coef(regfit.best, id= i)
-  pred <- test.mat[, names (coefi)] %*% coefi
-  val.errors[i] <- mean((test$lpsa-pred)^2)
-}
+# val.errors <- rep (0, 8)
+# for (i in 1:8) {
+#   coefi <- coef(regfit.best, id= i)
+#   pred <- test.mat[, names (coefi)] %*% coefi
+#   val.errors[i] <- mean((test$lpsa-pred)^2)
+# }
 #--------------------------------------------------
-#ross validation 5 
-k.5<-5
-n<- nrow(train)
-set.seed (1)
 
-#cv.error.5 <- rep (0, 1)
-folds <- sample ( rep (1:k.5, length = n))
-cv.errors.5 <- matrix (NA, k.5, 8,
-                     dimnames = list (NULL , paste (1:8)))
-for (j in 1:k.5) {
-  best.fit.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
-                            nvmax = 8)
-  
-  for (i in 1:8) {
-    coefi <- coef(best.fit.5, id= i)
-    pred <- test.mat[, names (coefi)] %*% coefi
-    cv.errors.5[j,i] <- mean((test$lpsa-pred)^2)
-  }
-}
-mean.cv.errors.5 <- apply (cv.errors.5 , 2, mean)
-mean.cv.errors.5
-par (mfrow = c(1, 1))
-plot (mean.cv.errors.5 , type = "b")
+set.seed (1)
 
 glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 cv.error.5 <- cv.glm (train , glm.fit.5 , K = 5)$delta
 cv.error.5
-reg.best.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
-                          nvmax = 8)
-coef(reg.best.5,1)
-
-k.10<-10
-n<- nrow(train)
-set.seed (1)
-
-folds <- sample ( rep (1:k.10, length = n))
-cv.errors.10 <- matrix (NA, k.10, 8,
-                       dimnames = list (NULL , paste (1:8)))
-for (j in 1:k.10) {
-  best.fit.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
-                            nvmax = 8)#
-  
-  for (i in 1:8) {
-    coefi <- coef(best.fit.10, id= i)
-    pred <- test.mat[, names (coefi)] %*% coefi
-    cv.errors.10[j,i] <- mean((test$lpsa-pred)^2)
-  }
-}
-mean.cv.errors.10 <- apply (cv.errors.10 , 2, mean)
-mean.cv.errors.10
-par (mfrow = c(1, 1))
-plot (mean.cv.errors.10 , type = "b")
-
-reg.best.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
-                          nvmax = 8)
-coef(reg.best.10,1)
+# reg.best.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+#                           nvmax = 8)
+# coef(reg.best.5,1)
+# 
+# k.10<-10
+# n<- nrow(train)
+# set.seed (1)
+# 
+# folds <- sample ( rep (1:k.10, length = n))
+# cv.errors.10 <- matrix (NA, k.10, 8,
+#                        dimnames = list (NULL , paste (1:8)))
+# for (j in 1:k.10) {
+#   best.fit.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+#                             nvmax = 8)#
+#   
+#   for (i in 1:8) {
+#     coefi <- coef(best.fit.10, id= i)
+#     pred <- test.mat[, names (coefi)] %*% coefi
+#     cv.errors.10[j,i] <- mean((test$lpsa-pred)^2)
+#   }
+# }
+# mean.cv.errors.10 <- apply (cv.errors.10 , 2, mean)
+# mean.cv.errors.10
+# par (mfrow = c(1, 1))
+# plot (mean.cv.errors.10 , type = "b")
+# 
+# reg.best.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+#                           nvmax = 8)
+# coef(reg.best.10,1)
 
 #5-fold cross-calidation on training data
 #set.seed (1)
