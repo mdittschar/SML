@@ -19,38 +19,95 @@ test <- data [data$train == FALSE, ]
 # b) LOOCV, 5- and 10-fold cross-validation on the training data set
 #----------------------
 library (boot)
+library( leaps)
 
 #CHECK IT AGAIN!!!!
+#NOT NEEDED INSIDE HERE--------------------------------
+set.seed (1)
+regfit.best <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train, nvmax = 8)
+test.mat <- model.matrix (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train)
 
+val.errors <- rep (0, 8)
+for (i in 1:8) {
+  coefi <- coef(regfit.best, id= i)
+  pred <- test.mat[, names (coefi)] %*% coefi
+  val.errors[i] <- mean((test$lpsa-pred)^2)
+}
+#--------------------------------------------------
+#ross validation 5 
 k.5<-5
-n.5<- nrow(data)
+n<- nrow(train)
+set.seed (1)
 
+folds <- sample ( rep (1:k.5, length = n))
+cv.errors.5 <- matrix (NA, k.5, 8,
+                     dimnames = list (NULL , paste (1:8)))
+for (j in 1:k.5) {
+  best.fit.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+                            nvmax = 8)#
+  
+  for (i in 1:8) {
+    coefi <- coef(best.fit.5, id= i)
+    pred <- test.mat[, names (coefi)] %*% coefi
+    cv.errors.5[j,i] <- mean((test$lpsa-pred)^2)
+  }
+}
+mean.cv.errors.5 <- apply (cv.errors.5 , 2, mean)
+mean.cv.errors.5
+par (mfrow = c(1, 1))
+plot (mean.cv.errors.5 , type = "b")
+
+k.10<-10
+n<- nrow(train)
+set.seed (1)
+
+folds <- sample ( rep (1:k.10, length = n))
+cv.errors.10 <- matrix (NA, k.10, 8,
+                       dimnames = list (NULL , paste (1:8)))
+for (j in 1:k.10) {
+  best.fit.10 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
+                            nvmax = 8)#
+  
+  for (i in 1:8) {
+    coefi <- coef(best.fit.10, id= i)
+    pred <- test.mat[, names (coefi)] %*% coefi
+    cv.errors.10[j,i] <- mean((test$lpsa-pred)^2)
+  }
+}
+mean.cv.errors.10 <- apply (cv.errors.10 , 2, mean)
+mean.cv.errors.10
+par (mfrow = c(1, 1))
+plot (mean.cv.errors.10 , type = "b")
 
 
 #5-fold cross-calidation on training data
-set.seed (1)
-cv.error.5 <- rep (0, 5)
-for (i in 1:5) {
-   glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-   cv.error.5[i] <- cv.glm (train , glm.fit.5 , K = 5)$delta[1]
-}
-cv.error.5
+#set.seed (1)
+#cv.error.5 <- rep (0, 5)
+#for (i in 1:5) {
+   #glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+  # cv.error.5[i] <- cv.glm (train , glm.fit.5 , K = 5)$delta[1]
+#}
+#cv.error.5
 
 
 #10-fold cross-calidation on training data
-set.seed (1)
-cv.error.10 <- rep (0, 10)
-for (i in 1:10) {
-  glm.fit.10 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-  cv.error.10[i] <- cv.glm (train , glm.fit.10 , K = 10)$delta[1]
-}
-cv.error.10
+#set.seed (1)
+#cv.error.10 <- rep (0, 10)
+#for (i in 1:10) {
+  #glm.fit.10 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+  #cv.error.10[i] <- cv.glm (train , glm.fit.10 , K = 10)$delta[1]
+#}
+#cv.error.10
 
 
+#Linear regression 
 set.seed(1)
-glm.fit.test <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = test)
-summary(glm.fit.test)
-
+lm.fit.train.lr <- lm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+model_summ <-summary(lm.fit.train.lr)
+#train MSE
+mean(model_summ$residuals^2)
+#test MSE
+mean((test$lpsa - predict.lm(lm.fit.train.lr, test)) ^ 2)
 
 
 
