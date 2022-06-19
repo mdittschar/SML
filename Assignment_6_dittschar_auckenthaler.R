@@ -117,11 +117,6 @@ glm.fit.pred <- predict(glm.fit.train, test)
 
 mean((test$lpsa - glm.fit.pred)^2)
 
-
-
-
-
-
 ##### HIER FEHLT NOCH ETWAS!!!
 
 #---------------------------
@@ -148,7 +143,7 @@ plot(cv.model.r,cex.axis = 1, cex.lab = 1.5)
 best.lamdba.r = cv.model.r$lambda.min
 best.lamdba.r
 
-#coefficients for best lamdba:
+#coefficients for best lambda:
 
 best.model.r <- glmnet(x.train, y.train, alpha = 0, lambda = best.lamdba.r)
 coef(best.model.r)
