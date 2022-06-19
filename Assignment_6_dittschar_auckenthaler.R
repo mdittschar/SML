@@ -9,6 +9,7 @@ data <- read.table("./prostate.txt")
 # normalization over column 1 to 8 
 for(i in 1:8 ){ 
   data[,i] <- (data[,i] - mean(data[,i]))/ sd(data[,i])
+  
 }
 
 #split data 
@@ -27,6 +28,12 @@ set.seed (1)
 regfit.best <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train, nvmax = 8)
 test.mat <- model.matrix (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train)
 
+#k.5<-5
+#n.5<- nrow(data)
+glm.fit <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+cv.error.loocv <- cv.glm (train , glm.fit)$delta
+cv.error.loocv
+#5-fold cross-calidation on training data
 val.errors <- rep (0, 8)
 for (i in 1:8) {
   coefi <- coef(regfit.best, id= i)
@@ -39,6 +46,7 @@ k.5<-5
 n<- nrow(train)
 set.seed (1)
 
+#cv.error.5 <- rep (0, 1)
 folds <- sample ( rep (1:k.5, length = n))
 cv.errors.5 <- matrix (NA, k.5, 8,
                      dimnames = list (NULL , paste (1:8)))
@@ -57,6 +65,9 @@ mean.cv.errors.5
 par (mfrow = c(1, 1))
 plot (mean.cv.errors.5 , type = "b")
 
+glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+cv.error.5 <- cv.glm (train , glm.fit.5 , K = 5)$delta
+cv.error.5
 reg.best.5 <- regsubsets (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45,data = train[folds != j, ],
                           nvmax = 8)
 coef(reg.best.5,1)
@@ -98,6 +109,12 @@ coef(reg.best.10,1)
 
 
 #10-fold cross-calidation on training data
+
+
+glm.fit.10 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+cv.error.10 <- cv.glm (train , glm.fit.10 , K = 10)$delta
+
+cv.error.10
 #set.seed (1)
 #cv.error.10 <- rep (0, 10)
 #for (i in 1:10) {
@@ -107,6 +124,7 @@ coef(reg.best.10,1)
 #cv.error.10
 
 
+glm.fit.train <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 #Linear regression 
 set.seed(1)
 lm.fit.train.lr <- lm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
@@ -115,6 +133,11 @@ model_summ <-summary(lm.fit.train.lr)
 mean(model_summ$residuals^2)
 #test MSE
 mean((test$lpsa - predict.lm(lm.fit.train.lr, test)) ^ 2)
+
+glm.fit.pred <- predict(glm.fit.train, test)
+
+mean((test$lpsa - glm.fit.pred)^2)
+
 
 
 
@@ -133,7 +156,6 @@ y.train <- train$lpsa
 y.test <- test$lpsa
 
 grid <- 10^ seq (10, -2, length = 100)
-set.seed (1)
 ridge.mod <- glmnet (x.train, y.train, alpha = 0, lambda = grid)
 #plot showing the values of the coefficients in relation to the parameter λ 
 plot(ridge.mod, xvar = "lambda",col = 1:8, label = TRUE,cex.axis = 1, cex.lab = 1.5)
@@ -141,20 +163,20 @@ plot(ridge.mod, xvar = "lambda",col = 1:8, label = TRUE,cex.axis = 1, cex.lab = 
 #--------------------------
 # d)  function cv.glmnet() that automatically performs k-fold cross validation using k = 10 folds.
 #--------------------------
-set.seed(1)
+
 cv.model.r <- cv.glmnet(x.train, y.train, alpha = 0)
 plot(cv.model.r,cex.axis = 1, cex.lab = 1.5)
 best.lamdba.r = cv.model.r$lambda.min
 best.lamdba.r
 
 #coefficients for best lamdba:
-set.seed(1)
+
 best.model.r <- glmnet(x.train, y.train, alpha = 0, lambda = best.lamdba.r)
 coef(best.model.r)
 
 #train set MSE
 ridge.pred.train <- predict (ridge.mod , s = best.lamdba.r ,
-                       newx = x.train) 
+                       newx = x.train[-trainTrue]) 
 train.mse.r <- mean ((ridge.pred.train - y.train)^2)
 train.mse.r
 
@@ -167,7 +189,8 @@ test.mse.r
 #--------------------------
 # e) fit lasso model
 #--------------------------
-set.seed (1)
+
+
 lasso.mod <- glmnet (x.train, y.train, alpha = 1,
                      lambda = grid)
 #plot coefficients in relation to the parameter λ 
@@ -177,17 +200,17 @@ plot(lasso.mod, xvar = "lambda",col = 1:8, label = TRUE, cex.axis = 1, cex.lab =
 #--------------------------
 # f) function cv.glmnet() that automatically performs k-fold cross validation using k = 10 folds.
 #--------------------------
-set.seed(1)
+# also, glmnet() transforms qualitative variables like the trainTrue column
+# into dummy variables
 cv.model.l <- cv.glmnet (x.train, y.train, alpha = 1)
 plot (cv.model.l,cex.axis = 1, cex.lab = 1.5)
 best.lamdba.l <- cv.model.l$lambda.min
 best.lamdba.l
-
-# find coefficients to best lamdba model
-set.seed(1)
-best.model.l <- glmnet(x.train, y.train, alpha = 0, lambda = best.lamdba.l)
-coef(best.model.l)
-
+# find coefficients to best lambda model
+out <- glmnet(x.train, y.train, alpha=1, lambda = grid)
+#best.model.l <- glmnet(x.train, y.train, alpha = 0, lambda = best.lamdba.l)
+#coef(best.model.l)
+lasso.coef <- predict(out, type="coefficients", s=best.lamdba.l)
 #train set MSE
 lasso.pred.train <- predict (lasso.mod , s = best.lamdba.l ,
                              newx = x.train) 
@@ -199,3 +222,5 @@ lasso.pred <- predict (lasso.mod , s = best.lamdba.l ,
                        newx = x.test)
 test.mse.l<- mean ((lasso.pred - y.test)^2)
 test.mse.l
+
+
