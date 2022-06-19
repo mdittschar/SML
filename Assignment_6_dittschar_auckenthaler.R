@@ -46,18 +46,13 @@ cv.error.10 <- cv.glm (train , glm.fit.10 , K = 10)$delta[1]
 #mse 10-cross validation
 cv.error.10
 
-# set.seed (1)
-# glm.fit.train <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-# glm.linear.pred <- predict(glm.fit.train, test)
-# mean((test$lpsa - glm.linear.pred) ^ 2)
+
 
 #Linear regression 
 
 set.seed(1)
 lm.fit.train.lr <- lm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-# model_summ <-summary(lm.fit.train.lr)
-# #train MSE
-# mean(model_summ$residuals^2)
+
 #test MSE
 mean((test$lpsa - predict.lm(lm.fit.train.lr, test)) ^ 2)
 
