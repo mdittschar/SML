@@ -23,14 +23,14 @@ library (boot)
 library( leaps)
 
 
-#LOOVV
+#LOOCV
 set.seed (1)
 glm.fit <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 cv.error.loocv <- cv.glm (train , glm.fit)$delta[1]
 #MSE
 cv.error.loocv
 
-#5-fold cross-calidation on training data
+#5-fold cross-validation on training data
 set.seed (1)
 
 glm.fit.5 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
@@ -39,35 +39,33 @@ cv.error.5 <- cv.glm (train , glm.fit.5 , K = 5)$delta[1]
 cv.error.5
 
 
-#10-fold cross-calidation on training data
-
+#10-fold cross-validation on training data
 set.seed (1)
 glm.fit.10 <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
 cv.error.10 <- cv.glm (train , glm.fit.10 , K = 10)$delta[1]
 #mse 10-cross validation
 cv.error.10
 
-set.seed (1)
-glm.fit.train <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-glm.linear.pred <- predict(glm.fit.train, test)
-mean((test$lpsa - glm.linear.pred) ^ 2)
-
+# set.seed (1)
+# glm.fit.train <- glm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
+# glm.linear.pred <- predict(glm.fit.train, test)
+# mean((test$lpsa - glm.linear.pred) ^ 2)
 
 #Linear regression 
 
 set.seed(1)
 lm.fit.train.lr <- lm (lpsa ~ lcavol+ lweight+ age + lbph + svi+ lcp+ gleason+pgg45, data = train)
-model_summ <-summary(lm.fit.train.lr)
-#train MSE
-mean(model_summ$residuals^2)
+# model_summ <-summary(lm.fit.train.lr)
+# #train MSE
+# mean(model_summ$residuals^2)
 #test MSE
 mean((test$lpsa - predict.lm(lm.fit.train.lr, test)) ^ 2)
 
-glm.fit.pred <- predict(glm.fit.train, test)
-
-mean((test$lpsa - glm.fit.pred)^2)
-#coefficient 
-coef(lm.fit.train.lr)
+# glm.fit.pred <- predict(glm.fit.train, test)
+# 
+# mean((test$lpsa - glm.fit.pred)^2)
+# #coefficient 
+# coef(lm.fit.train.lr)
 
 #---------------------------
 # c) fit ridge regression model
@@ -132,8 +130,6 @@ cv.model.l <- cv.glmnet (x.train, y.train, alpha = 1)
 plot (cv.model.l,cex.axis = 1, cex.lab = 1.5)
 best.lamdba.l <- cv.model.l$lambda.min
 best.lamdba.l
-# find coefficients to best lambda model
-out <- glmnet(x.train, y.train, alpha=1, lambda = grid)
 
 lasso.coef <- predict(lasso.mod, type="coefficients", s=best.lamdba.l)
 lasso.coef
