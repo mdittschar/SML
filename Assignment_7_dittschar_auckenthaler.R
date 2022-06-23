@@ -16,7 +16,7 @@ rpart.plot(obesitree)
 #-------------------------------
 # b) Predict the test samples
 #--------------------------------
-obesity_predict = predict(tree, obesity_test, type="class")
+obesity_predict = predict(obesitree, obesity_test, type="class")
 tree_acc = mean(obesity_predict == obesity_test$ObesityLevel)
 confusion_matrix = table(obesity_predict, obesity_test$ObesityLevel)
 confusion_matrix
