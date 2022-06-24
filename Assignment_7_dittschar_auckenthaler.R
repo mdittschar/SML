@@ -57,13 +57,51 @@ test.acc.bag
 # e)  mtry-parameter of the random forest 
 #     by five-fold cross validation.
 #--------------------------------
-block_1 = obesity_train[0:300,]
-no_block_1 = obesity_train[-0:300,]#-block_1,]
+
+
+mean_accuracies = c()
+for (j in 1:16){
+  accuracies = c()
+  m = j
+  for (i in 1:5){
+    indices = ((i-1)*300+1):(i*300)
+    fold = obesity_train[indices,]
+    train_fold = obesity_train[-indices,]
+    set.seed(42)
+    fold_rf = randomForest(ObesityLevel ~ ., mtry=m, data= train_fold)
+    yhat.fold <- predict(fold_rf , newdata = fold)
+    fold.acc = mean(yhat.fold == obesity_train$ObesityLevel[indices])
+    accuracies = append(accuracies, fold.acc)
+  }
+  mean_accuracies = append(mean_accuracies, mean(accuracies))
+}
+plot(mean_accuracies)
+which.max(mean_accuracies)
+
 #-------------------------------
 # f)  random forest with the selected mtry ˆ f
 #--------------------------------
-
+final_forest = randomForest(ObesityLevel ~ ., mtry=9, data= obesity_train)
+rf_pred_final = predict(final_forest, obesity_test)
+final.acc = mean(rf_pred_final == obesity_test$ObesityLevel)
+confusion_matrix_rf = table(rf_pred_final, obesity_test$ObesityLevel)
+confusion_matrix_rf
+varImpPlot(final_forest)
+oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
+oob.error
+final_forest$importance
 #-------------------------------
 # g)  mtry according to the out-of-bag (OOB) error and compare 
 #     to the CV-based tuning
 #--------------------------------
+oob.mean = c()
+for (k in 1:16){
+  oob.error = c()
+  m = k
+  final_forest = randomForest(ObesityLevel ~ ., mtry=k, data= obesity_train)
+  rf_pred_final = predict(final_forest, obesity_test)
+  oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
+  oob.mean = append(oob.mean, oob.error)
+  
+}
+plot(oob.mean)
