@@ -105,4 +105,4 @@ for (k in 1:16){
   
 }
 plot(oob.mean)
-gini = rep(1,16)- oob.mean*oob.mean
+
