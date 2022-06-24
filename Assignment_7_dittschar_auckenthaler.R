@@ -48,7 +48,7 @@ test.acc.rf
 
 #Bagging
 set.seed(42)
-bag.obesity= randomForest(ObesityLevel ~., data= obesity_train, mtry=12, importance = TRUE)
+bag.obesity= randomForest(ObesityLevel ~., data= obesity_train, mtry=16, importance = TRUE)
 yhat.bag <- predict (bag.obesity , newdata = obesity_test)
 test.acc.bag<-mean(yhat.bag == obesity_test$ObesityLevel)
 test.acc.bag
@@ -57,8 +57,8 @@ test.acc.bag
 # e)  mtry-parameter of the random forest 
 #     by five-fold cross validation.
 #--------------------------------
-
-x = 1
+block_1 = obesity_train[0:300,]
+no_block_1 = obesity_train[-0:300,]#-block_1,]
 #-------------------------------
 # f)  random forest with the selected mtry ˆ f
 #--------------------------------
