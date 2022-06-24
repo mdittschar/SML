@@ -13,14 +13,14 @@ obesity_train = obesity[0:1500,]
 obesity_test = obesity[1500:2111,]
 set.seed(42)
 obesitree <- rpart(formula= ObesityLevel~., data = obesity_train)
-plot(obesitree)
-rpart.plot(obesitree)
+rpart.plot(obesitree, box.palette=0)
 #-------------------------------
 # b) Predict the test samples
 #--------------------------------
 set.seed(42)
 obesity_predict = predict(obesitree, obesity_test, type="class")
 tree_acc = mean(obesity_predict == obesity_test$ObesityLevel)
+tree_acc
 confusion_matrix = table(obesity_predict, obesity_test$ObesityLevel)
 confusion_matrix
 #-------------------------------
@@ -41,27 +41,29 @@ obesity_train$ObesityLevel = factor(obesity_train$ObesityLevel)
 obesity_test$ObesityLevel = factor(obesity_test$ObesityLevel)
 obesity_rf = randomForest(ObesityLevel ~ ., data= obesity_train)
 yhat.rf<-predict(obesity_rf, newdata= obesity_test)
-test.MSE.rf<- mean(yhat.rf == obesity_test$ObesityLevel)
-test.MSE.rf
+test.acc.rf<- mean(yhat.rf == obesity_test$ObesityLevel)
+test.acc.rf
 
 
 
 #Bagging
 set.seed(42)
-bag.obesity= randomForest(ObesityLevel ~., data= obesity_train,mtry = 12, importance = TRUE)
+bag.obesity= randomForest(ObesityLevel ~., data= obesity_train, mtry=12, importance = TRUE)
 yhat.bag <- predict (bag.obesity , newdata = obesity_test)
-test.MSE.bag<-mean(yhat.bag == obesity_test$ObesityLevel)
-test.MSE.bag
+test.acc.bag<-mean(yhat.bag == obesity_test$ObesityLevel)
+test.acc.bag
 
 #-------------------------------
-# e)  mtry-parameter of the random forest by five-fold cross validation.
+# e)  mtry-parameter of the random forest 
+#     by five-fold cross validation.
 #--------------------------------
 
-
+x = 1
 #-------------------------------
 # f)  random forest with the selected mtry ˆ f
 #--------------------------------
 
 #-------------------------------
-# g)  mtry according to the out-of-bag (OOB) error and compare to the CV-based tuning
+# g)  mtry according to the out-of-bag (OOB) error and compare 
+#     to the CV-based tuning
 #--------------------------------
