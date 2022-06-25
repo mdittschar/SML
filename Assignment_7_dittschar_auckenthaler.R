@@ -3,26 +3,47 @@ library(rpart)
 library(rpart.plot)
 library(e1071)
 library(randomForest)
-library (gbm)
 
 #-------------------------------
 # a) Learn a decision tree. 
 #--------------------------------
+
 obesity <- read.csv("./Obesity.csv")
 obesity_train = obesity[0:1500,]
 obesity_test = obesity[1500:2111,]
+obesity_train$ObesityLevel = factor(obesity_train$ObesityLevel)
+obesity_test$ObesityLevel = factor(obesity_test$ObesityLevel)
 set.seed(42)
+obesitytree2<-tree(ObesityLevel~.,data= obesity_train)
+plot(obesitytree2)
+text(obesitytree2)
+summary(obesitytree2)
+
+
+
+#Not needed but interesting with library (rpart und rpart.plot)
 obesitree <- rpart(formula= ObesityLevel~., data = obesity_train)
 rpart.plot(obesitree, box.palette=0)
+
+
 #-------------------------------
 # b) Predict the test samples
-#--------------------------------
+
 set.seed(42)
-obesity_predict = predict(obesitree, obesity_test, type="class")
-tree_acc = mean(obesity_predict == obesity_test$ObesityLevel)
-tree_acc
-confusion_matrix = table(obesity_predict, obesity_test$ObesityLevel)
+obesity_predict2 = predict(obesitytree2, obesity_test, type="class")
+tree_acc3 = mean(obesity_predict2 == obesity_test$ObesityLevel)
+tree_acc3
+
+confusion_matrix = table(obesity_predict2, obesity_test$ObesityLevel)
 confusion_matrix
+
+#set.seed(42)
+#obesity_predict = predict(obesitree, obesity_test, type="class")
+#tree_acc = mean(obesity_predict == obesity_test$ObesityLevel)
+#tree_acc
+#confusion_matrix = table(obesity_predict, obesity_test$ObesityLevel)
+#confusion_matrix
+
 #-------------------------------
 # c) Learn a Naive Bayes Classifier
 #--------------------------------
@@ -75,18 +96,22 @@ for (j in 1:16){
   }
   mean_accuracies = append(mean_accuracies, mean(accuracies))
 }
-plot(mean_accuracies)
+plot(mean_accuracies,col=ifelse(mean_accuracies == c(max(mean_accuracies)), 'red', 'black'),pch = 19,xlab="mtry")
+axis(1, at=seq(1,16, by=1))
 which.max(mean_accuracies)
+mean_accuracies[which.max(mean_accuracies)]
 
 #-------------------------------
 # f)  random forest with the selected mtry ˆ f
 #--------------------------------
-final_forest = randomForest(ObesityLevel ~ ., mtry=9, data= obesity_train)
+set.seed(42)
+final_forest = randomForest(ObesityLevel ~ ., mtry=9, data= obesity_train, importance=TRUE)
 rf_pred_final = predict(final_forest, obesity_test)
 final.acc = mean(rf_pred_final == obesity_test$ObesityLevel)
+final.acc
 confusion_matrix_rf = table(rf_pred_final, obesity_test$ObesityLevel)
 confusion_matrix_rf
-varImpPlot(final_forest)
+varImpPlot(final_forest,pch = 19)
 oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
 oob.error
 final_forest$importance
@@ -98,11 +123,15 @@ oob.mean = c()
 for (k in 1:16){
   oob.error = c()
   m = k
+  set.seed(42)
   final_forest = randomForest(ObesityLevel ~ ., mtry=k, data= obesity_train)
   rf_pred_final = predict(final_forest, obesity_test)
   oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
   oob.mean = append(oob.mean, oob.error)
   
 }
-plot(oob.mean)
-
+plot(oob.mean,col=ifelse(oob.mean == c(min(oob.mean)), 'red', 'black'),pch = 19,xlab="mtry")
+axis(1, at=seq(1,16, by=1))
+which.min(oob.mean)
+#plot(final_forest)
+ 
