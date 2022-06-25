@@ -11,8 +11,14 @@ library(randomForest)
 obesity <- read.csv("./Obesity.csv")
 obesity_train = obesity[0:1500,]
 obesity_test = obesity[1500:2111,]
-obesity_train$ObesityLevel = factor(obesity_train$ObesityLevel)
-obesity_test$ObesityLevel = factor(obesity_test$ObesityLevel)
+
+#obesity_train$ObesityLevel = factor(obesity_train$ObesityLevel)
+#obesity_test$ObesityLevel = factor(obesity_test$ObesityLevel)
+set.seed(42)
+obesity_train[sapply(obesity_train, is.character)] <- lapply(obesity_train[sapply(obesity_train, is.character)], as.factor)
+set.seed(42)
+obesity_test[sapply(obesity_test, is.character)] <- lapply(obesity_test[sapply(obesity_test, is.character)], as.factor)
+
 set.seed(42)
 obesitytree2<-tree(ObesityLevel~.,data= obesity_train)
 plot(obesitytree2)
@@ -21,7 +27,7 @@ summary(obesitytree2)
 
 
 
-#Not needed but interesting with library (rpart und rpart.plot)
+#Not needed but interesting with decision tree with the library (rpart und rpart.plot)
 obesitree <- rpart(formula= ObesityLevel~., data = obesity_train)
 rpart.plot(obesitree, box.palette=0)
 
@@ -58,9 +64,14 @@ bayes_acc
 #--------------------------------
 #Random Forest
 set.seed(42)
+obesity_train[sapply(obesity_test, is.factor)] <- lapply(obesity_train[sapply(obesity_train, is.factor)], as.character)
+obesity_test[sapply(obesity_test, is.factor)] <- lapply(obesity_test[sapply(obesity_test, is.factor)], as.character)
 obesity_train$ObesityLevel = factor(obesity_train$ObesityLevel)
 obesity_test$ObesityLevel = factor(obesity_test$ObesityLevel)
+
 obesity_rf = randomForest(ObesityLevel ~ ., data= obesity_train)
+
+summary(obesity_rf)
 yhat.rf<-predict(obesity_rf, newdata= obesity_test)
 test.acc.rf<- mean(yhat.rf == obesity_test$ObesityLevel)
 test.acc.rf
@@ -70,6 +81,8 @@ test.acc.rf
 #Bagging
 set.seed(42)
 bag.obesity= randomForest(ObesityLevel ~., data= obesity_train, mtry=16, importance = TRUE)
+
+summary(bag.obesity)
 yhat.bag <- predict (bag.obesity , newdata = obesity_test)
 test.acc.bag<-mean(yhat.bag == obesity_test$ObesityLevel)
 test.acc.bag
@@ -133,5 +146,5 @@ for (k in 1:16){
 plot(oob.mean,col=ifelse(oob.mean == c(min(oob.mean)), 'red', 'black'),pch = 19,xlab="mtry")
 axis(1, at=seq(1,16, by=1))
 which.min(oob.mean)
-#plot(final_forest)
+plot(final_forest)
  
