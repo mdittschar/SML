@@ -130,10 +130,10 @@ final.acc = mean(rf_pred_final == obesity_test$ObesityLevel)
 final.acc
 confusion_matrix_rf = table(rf_pred_final, obesity_test$ObesityLevel)
 confusion_matrix_rf
-varImpPlot(final_forest,pch = 19)
+varImpPlot(final_forest, pch = 19)
 # oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
 # oob.error
-final_forest$importance
+final_forest$importance[,"MeanDecreaseGini"]
 final_forest$confusion
 #-------------------------------
 # g)  mtry according to the out-of-bag (OOB) error and compare 
@@ -152,7 +152,6 @@ for (k in 1:16){
 plot(oob.mean,col=ifelse(oob.mean == c(min(oob.mean)), 'red', 'black'),pch = 19,xlab="mtry")
 axis(1, at=seq(1,16, by=1))
 which.min(oob.mean)
-plot(final_forest)
 oob.mean
  
 plot(oob.mean, col="orange", ylim=c(0,1), xlab="mtry", ylab="error")
