@@ -55,6 +55,7 @@ confusion_matrix
 #--------------------------------
 set.seed(42)
 bayes_obesity = naiveBayes(ObesityLevel ~., data=obesity_train)
+bayes_obesity
 bayes_predict = predict(bayes_obesity, obesity_test, type="class")
 bayes_acc = mean(bayes_predict == obesity_test$ObesityLevel)
 bayes_acc
@@ -94,6 +95,7 @@ test.acc.bag
 
 
 mean_accuracies = c()
+standard_errors = c()
 for (j in 1:16){
   accuracies = c()
   m = j
@@ -108,8 +110,10 @@ for (j in 1:16){
     accuracies = append(accuracies, fold.acc)
   }
   mean_accuracies = append(mean_accuracies, mean(accuracies))
+  standard_errors = append(standard_errors, sqrt(sum((accuracies - mean(accuracies))^2)/length(accuracies)))
 }
 plot(mean_accuracies,col=ifelse(mean_accuracies == c(max(mean_accuracies)), 'red', 'black'),pch = 19,xlab="mtry")
+arrows(x0=1:16, y0=mean_accuracies - standard_errors, x1=1:16, y1=mean_accuracies + standard_errors, code=3, lwd=2)
 axis(1, at=seq(1,16, by=1))
 which.max(mean_accuracies)
 mean_accuracies[which.max(mean_accuracies)]
@@ -125,9 +129,10 @@ final.acc
 confusion_matrix_rf = table(rf_pred_final, obesity_test$ObesityLevel)
 confusion_matrix_rf
 varImpPlot(final_forest,pch = 19)
-oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
-oob.error
+# oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
+# oob.error
 final_forest$importance
+final_forest$confusion
 #-------------------------------
 # g)  mtry according to the out-of-bag (OOB) error and compare 
 #     to the CV-based tuning
@@ -141,10 +146,18 @@ for (k in 1:16){
   rf_pred_final = predict(final_forest, obesity_test)
   oob.error = sum(rf_pred_final != obesity_test$ObesityLevel)/length(rf_pred_final)
   oob.mean = append(oob.mean, oob.error)
-  
 }
 plot(oob.mean,col=ifelse(oob.mean == c(min(oob.mean)), 'red', 'black'),pch = 19,xlab="mtry")
 axis(1, at=seq(1,16, by=1))
 which.min(oob.mean)
 plot(final_forest)
+oob.mean
  
+plot(oob.mean, col="orange", ylim=c(0,1), xlab="mtry", ylab="error")
+axis(1, at=seq(1,16, by=1))
+legend(x="topright" , legend=c("OOB", "CV"), fill=c("orange", "blue"))
+title("Cross-validation vs. OOB tuning")
+par(new=TRUE)
+points(1- mean_accuracies, col="blue")
+final.acc
+1- oob.mean[which.min(oob.mean)]
