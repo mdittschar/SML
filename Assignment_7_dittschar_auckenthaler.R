@@ -112,8 +112,10 @@ for (j in 1:16){
   mean_accuracies = append(mean_accuracies, mean(accuracies))
   standard_errors = append(standard_errors, sqrt(sum((accuracies - mean(accuracies))^2)/length(accuracies)))
 }
-plot(mean_accuracies,col=ifelse(mean_accuracies == c(max(mean_accuracies)), 'red', 'black'),pch = 19,xlab="mtry")
-arrows(x0=1:16, y0=mean_accuracies - standard_errors, x1=1:16, y1=mean_accuracies + standard_errors, code=3, lwd=2)
+
+plot(mean_accuracies,col=ifelse(mean_accuracies == c(max(mean_accuracies)), 'red', 'black'),pch = 19,xlab="mtry", ylim=c(0,1))
+arrows(x0=1:16, y0=mean_accuracies - standard_errors, x1=1:16, y1=mean_accuracies + standard_errors, code=3, lwd=1, angle=90)
+title("Mean accuracies dependent on mtry")
 axis(1, at=seq(1,16, by=1))
 which.max(mean_accuracies)
 mean_accuracies[which.max(mean_accuracies)]
