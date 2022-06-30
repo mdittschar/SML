@@ -34,10 +34,34 @@ set.seed (1)
 summary(wine.white)
 
 testIndex.white = sample(1:4898, 4898/4)
-train.white.wine.x = wine.white[-testIndex.white,]
-train.white.wine.y = wine.white$quality[testIndex.white]
-test.white.wine.x = wine.white[testIndex.white,]
-test.white.wine.y = wine.white$quality[testIndex.white]
+train.white.x = wine.white[-testIndex.white,1:11]
+train.white.x["quality"] = wine.white$quality[-testIndex.white]
+train.white.y = wine.white$quality[-testIndex.white]
+test.white.x = wine.white[testIndex.white,1:11]
+test.white.x["quality"] = wine.white$quality[testIndex.white]
+test.white.y = wine.white$quality[testIndex.white]
+# data.frame(x=x, y=as.factor(y))
+testIndex.red = sample(1:4898, 4898/4)
+train.red.x = wine.red[-testIndex.red,1:11]
+train.red.y = wine.red$quality[testIndex.red]
+test.red.x = wine.red[testIndex.red,1:11]
+test.red.y = wine.red$quality[testIndex.red]
+
+means = colMeans(train.white.x)
+vars = apply(train.white.x, 2, var)
+
+means.r = colMeans(train.red.x)
+vars.r = apply(train.red.x, 2, var)
+
+for(i in 1:11 ){ 
+  train.white.x[,i] <- (train.white.x[,i] - means[i])/ vars[i]
+}
+
+# train.white.x = as.data.frame(t((t(train.white.x) - means)/sqrt(vars)))
+# test.white.x = as.data.frame(t((t(test.white.x) - means)/sqrt(vars)))
+
+train.red.x = t((t(train.red.x) - means.r)/sqrt(vars.r))
+test.red.x = t((t(test.red.x) - means.r)/sqrt(vars.r))
 #--------------------------
 # Multiple Linear Regression
 # > lm.fit <- lm(medv ∼ lstat + age , data = Boston)
@@ -47,25 +71,33 @@ test.white.wine.y = wine.white$quality[testIndex.white]
 #---------------------------
 # Logistic regression / bzw. LDA
 #----------------------------
-train.white.wine.x$quality = factor(train.white.wine.x$quality)
-test.white.wine.x$quality = factor(test.white.wine.x$quality)
-
-glm.model.white= glm (quality~. , data= train.white.wine.x, family = binomial)
-glm.probs = predict (glm.model.white, test.white.wine.x, type="response")
-
+train.white.y = factor(train.white.y)
+test.white.y = factor(test.white.y)
+log.x = train.white.x
+log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
+# log.x$quality = as.numeric(log.x$quality)
+# 
+# log.x[log.x$quality >6, "quality"] = 1
+# log.x[log.x$quality <= 6,"quality"] = 0
+# glm.pred[glm.probs > .5] <- "1"
+glm.model.white= glm(quality~.,data= log.x, family = "binomial")
+glm.probs = predict (glm.model.white, test.white.x, type="response")
+glm.probs[which(glm.probs > .5)] = 1
+glm.probs[which(glm.probs <= .5)] = 0
+table(glm.probs, test.white.x$quality > 6)
 #LDA
 # fit lda on train data
 set.seed(1)
-lda.fit.white= lda (quality~. , data= train.white.wine.x)
+lda.fit.white= lda (quality~. , data= train.white.x)
 # get predictions for training and test data
-#train.lda.pred.white = predict(lda.fit.white, train.white.wine.x, type="response")
-test.lda.pred.white = predict(lda.fit.white, test.white.wine.x, type="response")
+#train.lda.pred.white = predict(lda.fit.white, train.white.x, type="response")
+test.lda.pred.white = predict(lda.fit.white, test.white.x, type="response")
 # get train and test accuracy
-#mean(train.lda.pred.white$class == train.white.wine.x$quality)
-mean(test.lda.pred.white$class == test.white.wine.x$quality)
+#mean(train.lda.pred.white$class == train.white.x$quality)
+mean(test.lda.pred.white$class == test.white.x$quality)
 # get confusion matrices
-#table(train.lda.pred.white$class,train.white.wine.x$quality)
-table(test.lda.pred.white$class, test.white.wine.x$quality)
+#table(train.lda.pred.white$class,train.white.x$quality)
+table(test.lda.pred.white$class, test.white.x$quality)
 
 
 #---------------------------
@@ -76,7 +108,7 @@ summary(wine.red)
 
 dist.red.wine =table(wine.red$quality)
 dist.red.wine
-barplot(dist.red.wine, xlab= "Quality of red wine", ylab="Number of red wine",ylim = c(0,2200))
+barplot(dist.red.wine, xlab= "Quality of red wine", ylab="Number of red wines",ylim = c(0,2200))
 
 #--------------------------
 # Multiple Linear Regression
@@ -84,28 +116,39 @@ barplot(dist.red.wine, xlab= "Quality of red wine", ylab="Number of red wine",yl
 #> summary (lm.fit)
 #--------------------------
 
-lm.white <- lm(quality~., data= wine.white[trainIndex.white,])
+lm.white <- lm(quality~., data= train.white.x)
 summary(lm.white)
-
-lm.red <- lm(quality~., data= wine.red[trainIndex.red,])
-summary(lm.red)
+# 
+# lm.red <- lm(quality~., data= wine.red[-testIndex.red,])
+# summary(lm.red)
 
 #--------------------------
 # Tree learning
 #--------------------------
-train.white.x$quality = as.factor(train.white.x$quality)
+train.white.x["quality"] = as.factor(train.white.x$quality)
 tree.wine = tree(quality~.,data= train.white.x, mindev=5*1e-3)
 plot(tree.wine)
 text(tree.wine)
-tree.predict  = predict(tree.wine, test.x)
+tree.predict  = predict(tree.wine, test.white.x)
+
+tree.wine.cat = tree(quality~.,data= log.x)# mindev=5*1e-3)
+plot(tree.wine.cat)
+text(tree.wine.cat)
+tree.predict  = predict(tree.wine.cat, test.white.x)
 
 #--------------------------
 #  Random Forest
 #--------------------------
 
-rf.wine = randomForest(quality ~ ., data= train.white.x)
+rf.wine = randomForest(factor(quality) ~ ., data= train.white.x)
 rf.predict = predict(rf.wine, test.white.x)
 rf.acc = mean(rf.predict == test.white.x$quality)
+
+
+# random forest with categories
+rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x)
+rf.cat.predict = predict(rf.cat.wine, test.white.x)
+table(rf.cat.predict, test.white.x$quality > 6)
 # trainIndex = sample(1:1599, 1599/4)
 # train.red.wine.x = winequality.red[trainIndex,]
 # train.red.wine.y = winequality.red$quality[trainIndex]
