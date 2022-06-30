@@ -99,7 +99,13 @@ plot(tree.wine)
 text(tree.wine)
 tree.predict  = predict(tree.wine, test.x)
 
+#--------------------------
+#  Random Forest
+#--------------------------
 
+rf.wine = randomForest(quality ~ ., data= train.white.x)
+rf.predict = predict(rf.wine, test.white.x)
+rf.acc = mean(rf.predict == test.white.x$quality)
 # trainIndex = sample(1:1599, 1599/4)
 # train.red.wine.x = winequality.red[trainIndex,]
 # train.red.wine.y = winequality.red$quality[trainIndex]
