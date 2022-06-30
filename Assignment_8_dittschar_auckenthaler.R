@@ -33,7 +33,7 @@ cor(wine.white [1:(ncol(wine.white)-1)], use = "complete.obs")
 set.seed (1)
 summary(wine.white)
 
-testIndex.white = sample(1:4898, 4898/4)
+testIndex.white = sample(1:4898, 4898*.3)
 train.white.x = wine.white[-testIndex.white,1:11]
 train.white.x["quality"] = wine.white$quality[-testIndex.white]
 train.white.y = wine.white$quality[-testIndex.white]
@@ -53,8 +53,9 @@ vars = apply(train.white.x, 2, var)
 means.r = colMeans(train.red.x)
 vars.r = apply(train.red.x, 2, var)
 
-for(i in 1:11 ){ 
+for(i in 1:11 ){
   train.white.x[,i] <- (train.white.x[,i] - means[i])/ vars[i]
+  test.white.x[,i] <- (test.white.x[,i] - means[i])/ vars[i]
 }
 
 # train.white.x = as.data.frame(t((t(train.white.x) - means)/sqrt(vars)))
@@ -74,7 +75,7 @@ test.red.x = t((t(test.red.x) - means.r)/sqrt(vars.r))
 train.white.y = factor(train.white.y)
 test.white.y = factor(test.white.y)
 log.x = train.white.x
-log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
+log.x$quality = ifelse (as.integer(log.x$quality) > 7, 1, 0)
 # log.x$quality = as.numeric(log.x$quality)
 # 
 # log.x[log.x$quality >6, "quality"] = 1
@@ -131,11 +132,12 @@ plot(tree.wine)
 text(tree.wine)
 tree.predict  = predict(tree.wine, test.white.x)
 
-tree.wine.cat = tree(quality~.,data= log.x)# mindev=5*1e-3)
+tree.wine.cat = tree(factor(quality)~.,data= log.x)# mindev=5*1e-3)
 plot(tree.wine.cat)
 text(tree.wine.cat)
-tree.predict  = predict(tree.wine.cat, test.white.x)
-
+tree.predict  = predict(tree.wine.cat, test.white.x, type="class")
+table(tree.predict, test.white.x$quality > 7)
+tree.cat.acc = mean(tree.predict == ifelse(test.white.x$quality > 7, 1,0))
 #--------------------------
 #  Random Forest
 #--------------------------
@@ -146,9 +148,12 @@ rf.acc = mean(rf.predict == test.white.x$quality)
 
 
 # random forest with categories
-rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x)
+rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x, ntree=2000, importance=TRUE)
 rf.cat.predict = predict(rf.cat.wine, test.white.x)
-table(rf.cat.predict, test.white.x$quality > 6)
+table(rf.cat.predict, test.white.x$quality > 7)
+rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality >7, 1,0))
+varImpPlot(rf.cat.wine)
+
 # trainIndex = sample(1:1599, 1599/4)
 # train.red.wine.x = winequality.red[trainIndex,]
 # train.red.wine.y = winequality.red$quality[trainIndex]
