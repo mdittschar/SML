@@ -73,15 +73,17 @@ means.r = colMeans(train.red.x)
 vars.r = apply(train.red.x, 2, var)
 
 for(i in 1:11 ){
-  train.white.x[,i] <- (train.white.x[,i] - means[i])/ vars[i]
-  test.white.x[,i] <- (test.white.x[,i] - means[i])/ vars[i]
+  train.white.x[,i] <- (train.white.x[,i] - means[i])/ sqrt(vars[i])
+  test.white.x[,i] <- (test.white.x[,i] - means[i])/ sqrt(vars[i])
+  train.red.x[,i] <- (train.red.x[,i] - means[i])/ sqrt(vars[i])
+  test.red.x[,i] <- (test.red.x[,i] - means[i])/ sqrt(vars[i])
 }
 
-# train.white.x = as.data.frame(t((t(train.white.x) - means)/sqrt(vars)))
-# test.white.x = as.data.frame(t((t(test.white.x) - means)/sqrt(vars)))
+for(i in 1:11 ){
+  wine.white[,i] <- (wine.white[,i] - colMeans(wine.white)[i])/ sqrt(apply(wine.white, 2, var)[i])
+  
+}
 
-train.red.x = t((t(train.red.x) - means.r)/sqrt(vars.r))
-test.red.x = t((t(test.red.x) - means.r)/sqrt(vars.r))
 
 #--------------------------
 # Multiple Linear Regression
@@ -93,6 +95,81 @@ lm.white <- lm(quality~., data= train.white.x)
 summary(lm.white)
 lm.predict = predict(lm.white, test.white.x)
 
+#---------------------------
+# ridge 
+#--------------------------
+
+train.mat.white = model.matrix (quality ~ ., data=train.white.x)
+train.y.white = train.white.x$quality
+
+test.mat.white = model.matrix (quality ~., data= test.white.x)
+test.y.white= test.white.x$quality
+
+
+set.seed (1)
+grid <- 10^ seq (10, -2, length = 100)
+ridge.mod.white = glmnet (train.mat.white, train.y.white, alpha = 0, lambda = grid)
+#plot(ridge.mod.white, xvar = "lambda",col = 1:11, label = TRUE,cex.axis = 1, cex.lab = 1.5)
+
+set.seed (1)
+cv.model.r.white = cv.glmnet(train.mat.white, train.y.white, alpha = 0)
+plot(cv.model.r.white,cex.axis = 1, cex.lab = 1.5)
+best.lamdba.white = cv.model.r.white$lambda.min
+best.lamdba.white
+
+#coefficients for best lambda:
+set.seed (1)
+best.model.white = glmnet(train.mat.white, train.y.white, alpha = 0, lambda = best.lamdba.white)
+coef(best.model.white)
+
+#train set MSE
+ridge.pred.train.white = predict (ridge.mod.white , s = best.lamdba.white ,
+                                  newx = train.mat.white) 
+
+train.mse.r.white = mean ((ridge.pred.train.white - train.y.white)^2)
+train.mse.r.white
+
+#test set MSE
+ridge.pred.white = predict (ridge.mod.white , s = best.lamdba.white ,
+                            newx =test.mat.white) 
+
+test.mse.r.white = mean ((ridge.pred.white - test.y.white)^2)
+test.mse.r.white
+
+#-----------------------------
+# lasso
+#-----------------------------
+train.mat.white = model.matrix (quality ~ ., data=train.white.x)
+train.y.white = train.white.x$quality
+
+test.mat.white = model.matrix (quality ~., data= test.white.x)
+test.y.white= test.white.x$quality
+
+set.seed (1)
+lasso.mod.white = glmnet (train.mat.white, train.y.white, alpha = 1,
+                          lambda = grid)
+#plot coefficients in relation to the parameter Î» 
+#plot(lasso.mod, xvar = "lambda",col = 1:8, label = TRUE, cex.axis = 1, cex.lab = 1.5)
+
+set.seed (1)
+cv.model.l.white = cv.glmnet (train.mat.white,  train.y.white, alpha = 1)
+#plot (cv.model.l.white,cex.axis = 1, cex.lab = 1.5)
+best.lamdba.l.white = cv.model.l.white$lambda.min
+best.lamdba.l.white
+
+lasso.coef = predict(lasso.mod.white, type="coefficients", s=best.lamdba.l.white)
+lasso.coef
+#train set MSE
+lasso.pred.train.white = predict (lasso.mod.white , s = best.lamdba.l.white ,
+                                  newx = train.mat.white) 
+train.mse.l.white = mean ((lasso.pred.train.white - train.y.white)^2)
+train.mse.l.white
+
+#test set MSE
+lasso.pred.white = predict (lasso.mod.white , s = best.lamdba.l.white ,
+                            newx = test.mat.white)
+test.mse.l.white= mean ((lasso.pred.white - test.y.white)^2)
+test.mse.l.white
 
 
 #---------------------------
@@ -192,9 +269,32 @@ plot(rf.cat.accs,ylim=c(0,1))
 varImpPlot(rf.cat.wine)
 
 #---------------------------
+# Naive Bayes
+#---------------------------
+
+set.seed(1)
+# learn naive bayes classifier on th train set
+white.bayes = naiveBayes(quality ~., data=log.x)
+print(white.bayes)
+# predict on test set
+bayes_predict = predict(white.bayes, test.white.x, type="class")
+# test accuracy on the test set
+bayes_acc = mean(bayes_predict == ifelse(test.white.x$quality > 6, 1,0))
+str(white.bayes)
+#---------------------------
+# PCA
+#---------------------------
+white.pca <- prcomp(wine.white[1:11], center = TRUE,scale. = TRUE)
+str(white.pca)
+#plot(white.pca$rotation[,"PC1"],white.pca$rotation[,"PC2"] )
+plot(x=white.pca$x[,"PC1"], y=white.pca$x[,"PC2"], xlab="PC1", ylab="PC2", col=wine.white$quality)#, xlim=c(-0.6, 0.6))#, ylim=c(-.7, .7))
+arrows(x0=rep(0,12), y0=rep(0,12), x1=white.pca$rotation[,"PC1"]*15, y1=white.pca$rotation[,"PC2"]*15, xlab="PC1", ylab="PC2")
+text(x=white.pca$rotation[,"PC1"]*15-.45, y=white.pca$rotation[,"PC2"]*15+.45, labels=colnames(wine.white)[1:11])
+title("PCA on normalized data")
+#---------------------------
 # task b) Append a) to winequality.red 
 #---------------------------
-#str(wine.red)
+#str(wine.red), 
 #summary(wine.red)
 
 #dist.red.wine =table(wine.red$quality)
