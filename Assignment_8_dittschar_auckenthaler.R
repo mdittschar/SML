@@ -26,14 +26,20 @@ barplot(dist.white.wine, xlab= "Quality of white wines", ylab="Number of white w
 #---------------------
 #Linear Correlation
 #---------------------
-
-cor(wine.white)
+cor.val= cor(wine.white)
 #uniq.white= unique(wine.white$quality)
 #len.uniq.white=length(unique(wine.white$quality))
 #palette()[1:(length(unique(wine.white$quality)))]
 #pairs(wine.white[1:(ncol(wine.white)-1)],main = "Correlation Matrix for white wine data",pch = 21,bg = c(palette()[1:(length(unique(wine.white$quality)))])[unclass(wine.white$quality)])
-cor(wine.white [1:(ncol(wine.white)-1)], use = "complete.obs")
+#cor(wine.white [1:(ncol(wine.white)-1)], use = "complete.obs")
 cor.white= cor(wine.white [1:(ncol(wine.white)-1)],wine.white$quality )
+
+col= colorRampPalette(c("blue", "white", "red"))(256)
+heatmap(cor.val , Colv = NA, Rowv = NA,col=col, main= "Correlation Heatmap white wine", margins = c(10,10), xlab="Variables", ylab="Variables")
+legend(x="left", legend=c("-1", "0", "1"),fill=c("blue", "white", "red"))
+#boxplot
+boxplot(wine.white[1:(ncol(wine.white)-1)])
+
 
 
 
@@ -58,7 +64,7 @@ train.red.y = wine.red$quality[testIndex.red]
 test.red.x = wine.red[testIndex.red,1:11]
 test.red.y = wine.red$quality[testIndex.red]
 
-#Normalizatin of the data 
+#Normalization of the data 
 
 means = colMeans(train.white.x)
 vars = apply(train.white.x, 2, var)
@@ -85,6 +91,8 @@ test.red.x = t((t(test.red.x) - means.r)/sqrt(vars.r))
 
 lm.white <- lm(quality~., data= train.white.x)
 summary(lm.white)
+lm.predict = predict(lm.white, test.white.x)
+
 
 
 #---------------------------
@@ -128,19 +136,20 @@ table(test.lda.pred.white$class, test.white.x$quality)
 # Tree learning
 #--------------------------
 set.seed (1)
-train.white.x["quality"] = as.factor(train.white.x$quality)
-tree.wine = tree(quality~.,data= train.white.x, mindev=5*1e-3)
-plot(tree.wine)
-text(tree.wine)
-tree.predict  = predict(tree.wine, test.white.x)
+# train.white.x["quality"] = as.factor(train.white.x$quality)
+# tree.wine = tree(quality~.,data= train.white.x, mindev=5*1e-3)
+# plot(tree.wine)
+# text(tree.wine)
+# tree.predict  = predict(tree.wine, test.white.x)
 
 set.seed (1)
-tree.wine.cat = tree(factor(quality)~.,data= log.x)# mindev=5*1e-3)
+tree.wine.cat = tree(factor(quality)~.,data= log.x)
 plot(tree.wine.cat)
 text(tree.wine.cat)
 tree.predict  = predict(tree.wine.cat, test.white.x, type="class")
 table(tree.predict, test.white.x$quality > 6)
 tree.cat.acc = mean(tree.predict == ifelse(test.white.x$quality > 6, 1,0))
+print(tree.cat.acc)
 #--------------------------
 #  Random Forest
 #--------------------------
@@ -153,9 +162,10 @@ rf.acc = mean(rf.predict == test.white.x$quality)
 # random forest with categories
 set.seed (1)
 rf.cat.accs = c()
+mdg = c()
 for (i in 1:11){
   rf.cat.wine = randomForest(factor(quality) ~ ., mtry = i, data= log.x, importance=TRUE)
-  rf.cat.wine
+  mdg = append(mdg, rf.cat.wine$importance[,"MeanDecreaseGini"])
   rf.cat.predict = predict(rf.cat.wine, test.white.x)
   table(rf.cat.predict, test.white.x$quality > 6)
   rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
@@ -164,11 +174,14 @@ for (i in 1:11){
 
 plot(rf.cat.accs,ylim=c(0,1))
 varImpPlot(rf.cat.wine)
+for(k in 1:11){
+  plot(mdg[seq(k, length(mdg), 11)], ylim=c(0, 260))
+}
 
 rf.cat.accs = c()
 for (i in c(100,200,500,1000,2000)){
   rf.cat.wine = randomForest(factor(quality) ~ ., ntree=i, data= log.x, importance=TRUE)
-  rf.cat.wine
+  print(rf.cat.wine$importance[,"MeanDecreaseGini"])
   rf.cat.predict = predict(rf.cat.wine, test.white.x)
   table(rf.cat.predict, test.white.x$quality > 6)
   rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
