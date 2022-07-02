@@ -93,7 +93,7 @@ summary(lm.white)
 train.white.y = factor(train.white.y)
 test.white.y = factor(test.white.y)
 log.x = train.white.x
-log.x$quality = ifelse (as.integer(log.x$quality) > 7, 1, 0)
+log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
 # log.x$quality = as.numeric(log.x$quality)
 # 
 # log.x[log.x$quality >6, "quality"] = 1
@@ -139,8 +139,8 @@ tree.wine.cat = tree(factor(quality)~.,data= log.x)# mindev=5*1e-3)
 plot(tree.wine.cat)
 text(tree.wine.cat)
 tree.predict  = predict(tree.wine.cat, test.white.x, type="class")
-table(tree.predict, test.white.x$quality > 7)
-tree.cat.acc = mean(tree.predict == ifelse(test.white.x$quality > 7, 1,0))
+table(tree.predict, test.white.x$quality > 6)
+tree.cat.acc = mean(tree.predict == ifelse(test.white.x$quality > 6, 1,0))
 #--------------------------
 #  Random Forest
 #--------------------------
@@ -152,10 +152,30 @@ rf.acc = mean(rf.predict == test.white.x$quality)
 
 # random forest with categories
 set.seed (1)
-rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x, ntree=2000, importance=TRUE)
-rf.cat.predict = predict(rf.cat.wine, test.white.x)
-table(rf.cat.predict, test.white.x$quality > 7)
-rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality >7, 1,0))
+rf.cat.accs = c()
+for (i in 1:11){
+  rf.cat.wine = randomForest(factor(quality) ~ ., mtry = i, data= log.x, importance=TRUE)
+  rf.cat.wine
+  rf.cat.predict = predict(rf.cat.wine, test.white.x)
+  table(rf.cat.predict, test.white.x$quality > 6)
+  rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
+  rf.cat.accs = append(rf.cat.accs, rf.cat.acc)
+}
+
+plot(rf.cat.accs,ylim=c(0,1))
+varImpPlot(rf.cat.wine)
+
+rf.cat.accs = c()
+for (i in c(100,200,500,1000,2000)){
+  rf.cat.wine = randomForest(factor(quality) ~ ., ntree=i, data= log.x, importance=TRUE)
+  rf.cat.wine
+  rf.cat.predict = predict(rf.cat.wine, test.white.x)
+  table(rf.cat.predict, test.white.x$quality > 6)
+  rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
+  rf.cat.accs = append(rf.cat.accs, rf.cat.acc)
+}
+
+plot(rf.cat.accs,ylim=c(0,1))
 varImpPlot(rf.cat.wine)
 
 #---------------------------
