@@ -83,7 +83,6 @@ vars.r = apply(train.red.x, 2, var)
 for(i in 1:11 ){
   train.white.x[,i] <- (train.white.x[,i] - means[i])/ sqrt(vars[i])
   test.white.x[,i] <- (test.white.x[,i] - means[i])/ sqrt(vars[i])
-  
   train.red.x[,i] <- (train.red.x[,i] - means[i])/ sqrt(vars[i])
   test.red.x[,i] <- (test.red.x[,i] - means[i])/ sqrt(vars[i])
 }
@@ -129,7 +128,7 @@ ridge.mod.white = glmnet (train.mat.white, train.y.white, alpha = 0, lambda = gr
 
 set.seed (1)
 cv.model.r.white = cv.glmnet(train.mat.white, train.y.white, alpha = 0)
-#plot(cv.model.r.white,cex.axis = 1, cex.lab = 1.5)
+plot(cv.model.r.white,cex.axis = 1, cex.lab = 1.5)
 best.lamdba.white = cv.model.r.white$lambda.min
 best.lamdba.white
 
@@ -140,14 +139,14 @@ coef(best.model.white)
 
 #train set MSE
 ridge.pred.train.white = predict (ridge.mod.white , s = best.lamdba.white ,
-                             newx = train.mat.white) 
+                                  newx = train.mat.white) 
 
 train.mse.r.white = mean ((ridge.pred.train.white - train.y.white)^2)
 train.mse.r.white
 
 #test set MSE
 ridge.pred.white = predict (ridge.mod.white , s = best.lamdba.white ,
-                       newx =test.mat.white) 
+                            newx =test.mat.white) 
 
 test.mse.r.white = mean ((ridge.pred.white - test.y.white)^2)
 test.mse.r.white
@@ -163,8 +162,8 @@ test.y.white= test.white.x$quality
 
 set.seed (1)
 lasso.mod.white = glmnet (train.mat.white, train.y.white, alpha = 1,
-                     lambda = grid)
-#plot coefficients in relation to the parameter λ 
+                          lambda = grid)
+#plot coefficients in relation to the parameter Î» 
 #plot(lasso.mod, xvar = "lambda",col = 1:8, label = TRUE, cex.axis = 1, cex.lab = 1.5)
 
 set.seed (1)
@@ -177,13 +176,13 @@ lasso.coef = predict(lasso.mod.white, type="coefficients", s=best.lamdba.l.white
 lasso.coef
 #train set MSE
 lasso.pred.train.white = predict (lasso.mod.white , s = best.lamdba.l.white ,
-                             newx = train.mat.white) 
+                                  newx = train.mat.white) 
 train.mse.l.white = mean ((lasso.pred.train.white - train.y.white)^2)
 train.mse.l.white
 
 #test set MSE
 lasso.pred.white = predict (lasso.mod.white , s = best.lamdba.l.white ,
-                       newx = test.mat.white)
+                            newx = test.mat.white)
 test.mse.l.white= mean ((lasso.pred.white - test.y.white)^2)
 test.mse.l.white
 
@@ -307,12 +306,11 @@ plot(x=white.pca$x[,"PC1"], y=white.pca$x[,"PC2"], xlab="PC1", ylab="PC2", col=w
 arrows(x0=rep(0,12), y0=rep(0,12), x1=white.pca$rotation[,"PC1"]*15, y1=white.pca$rotation[,"PC2"]*15, xlab="PC1", ylab="PC2")
 text(x=white.pca$rotation[,"PC1"]*15-.45, y=white.pca$rotation[,"PC2"]*15+.45, labels=colnames(wine.white)[1:11])
 title("PCA on normalized data")
-
 #---------------------------
 # task b) Append a) to winequality.red 
 #---------------------------
-str(wine.red)
-summary(wine.red)
+#str(wine.red), 
+#summary(wine.red)
 
 dist.red.wine =table(wine.red$quality)
 dist.red.wine
