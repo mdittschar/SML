@@ -194,45 +194,42 @@ train.white.y = factor(train.white.y)
 test.white.y = factor(test.white.y)
 log.x = train.white.x
 log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
-# log.x$quality = as.numeric(log.x$quality)
-# 
-# log.x[log.x$quality >6, "quality"] = 1
-# log.x[log.x$quality <= 6,"quality"] = 0
-# glm.pred[glm.probs > .5] <- "1"
+
 set.seed (1)
 glm.model.white= glm(quality~.,data= log.x, family = "binomial")
 glm.probs = predict (glm.model.white, test.white.x, type="response")
+glm.probs.train = predict (glm.model.white, train.white.x, type="response")
 glm.probs[which(glm.probs > .5)] = 1
 glm.probs[which(glm.probs <= .5)] = 0
+glm.probs.train[which(glm.probs.train > .5)] = 1
+glm.probs.train[which(glm.probs.train <= .5)] = 0
 table(glm.probs, test.white.x$quality > 6)
+table(glm.probs.train, train.white.x$quality > 6)
 summary(glm.model.white)
-
-#----------------------------
-#LDA
-#------------------------------
-# fit lda on train data
-set.seed(1)
-lda.fit.white= lda (quality~. , data= train.white.x)
-# get predictions for training and test data
-#train.lda.pred.white = predict(lda.fit.white, train.white.x, type="response")
-test.lda.pred.white = predict(lda.fit.white, test.white.x, type="response")
-# get train and test accuracy
-#mean(train.lda.pred.white$class == train.white.x$quality)
-mean(test.lda.pred.white$class == test.white.x$quality)
-# get confusion matrices
-#table(train.lda.pred.white$class,train.white.x$quality)
-table(test.lda.pred.white$class, test.white.x$quality)
+glm.acc = mean(glm.probs == ifelse(test.white.x$quality > 6, 1, 0))
+print(glm.acc)
+glm.acc.train = mean(glm.probs.train == ifelse(train.white.x$quality > 6, 1, 0))
+print(glm.acc.train)
+# #----------------------------
+# #LDA
+# #------------------------------
+# # fit lda on train data
+# set.seed(1)
+# lda.fit.white= lda (quality~. , data= train.white.x)
+# # get predictions for training and test data
+# #train.lda.pred.white = predict(lda.fit.white, train.white.x, type="response")
+# test.lda.pred.white = predict(lda.fit.white, test.white.x, type="response")
+# # get train and test accuracy
+# #mean(train.lda.pred.white$class == train.white.x$quality)
+# mean(test.lda.pred.white$class == test.white.x$quality)
+# # get confusion matrices
+# #table(train.lda.pred.white$class,train.white.x$quality)
+# table(test.lda.pred.white$class, test.white.x$quality)
 
 
 #--------------------------
 # Tree learning
 #--------------------------
-set.seed (1)
-# train.white.x["quality"] = as.factor(train.white.x$quality)
-# tree.wine = tree(quality~.,data= train.white.x, mindev=5*1e-3)
-# plot(tree.wine)
-# text(tree.wine)
-# tree.predict  = predict(tree.wine, test.white.x)
 
 set.seed (1)
 tree.wine.cat = tree(factor(quality)~.,data= log.x)
@@ -245,69 +242,66 @@ print(tree.cat.acc)
 #--------------------------
 #  Random Forest
 #--------------------------
-set.seed (1)
-rf.wine = randomForest(factor(quality) ~ ., data= train.white.x)
-rf.predict = predict(rf.wine, test.white.x)
-rf.acc = mean(rf.predict == test.white.x$quality)
-
-
 # random forest with categories
 set.seed (1)
-rf.cat.accs = c()
+rf.cat.accs.mtry = c()
 mdg = c()
+
 for (i in 1:11){
   rf.cat.wine = randomForest(factor(quality) ~ ., mtry = i, data= log.x, importance=TRUE)
   mdg = append(mdg, rf.cat.wine$importance[,"MeanDecreaseGini"])
   rf.cat.predict = predict(rf.cat.wine, test.white.x)
   table(rf.cat.predict, test.white.x$quality > 6)
   rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
-  rf.cat.accs = append(rf.cat.accs, rf.cat.acc)
+  rf.cat.accs.mtry = append(rf.cat.accs.mtry, rf.cat.acc)
 }
+rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x, importance=TRUE)
 
-plot(rf.cat.accs,ylim=c(0,1))
 varImpPlot(rf.cat.wine)
-for(k in 1:11){
-  plot(mdg[seq(k, length(mdg), 11)], ylim=c(0, 260))
-}
 
-rf.cat.accs = c()
+rf.cat.accs.ntree = c()
+
 for (i in c(100,200,500,1000,2000)){
   rf.cat.wine = randomForest(factor(quality) ~ ., ntree=i, data= log.x, importance=TRUE)
-  print(rf.cat.wine$importance[,"MeanDecreaseGini"])
   rf.cat.predict = predict(rf.cat.wine, test.white.x)
   table(rf.cat.predict, test.white.x$quality > 6)
   rf.cat.acc = mean(rf.cat.predict == ifelse(test.white.x$quality > 6, 1,0))
-  rf.cat.accs = append(rf.cat.accs, rf.cat.acc)
+  rf.cat.accs.ntree = append(rf.cat.accs.ntree, rf.cat.acc)
 }
-
-plot(rf.cat.accs,ylim=c(0,1))
+rf.cat.wine = randomForest(factor(quality) ~ ., data= log.x, importance=TRUE)
+table(rf.cat.predict, test.white.x$quality > 6)
+plot(rf.cat.accs.mtry,ylim=c(0,1), xlab="mtry", ylab="Accuracy")
+title("Accuracy dependent on mtry")
+plot(c(100,200,500,1000,2000), rf.cat.accs.ntree,ylim=c(0,1), xlab="ntree", ylab="Accuracy")
+title("Accuracy dependent on ntree")
 varImpPlot(rf.cat.wine)
 
-#---------------------------
-# Naive Bayes
-#---------------------------
 
-set.seed(1)
-# learn naive bayes classifier on th train set
-white.bayes = naiveBayes(quality ~., data=log.x)
-print(white.bayes)
-# predict on test set
-bayes_predict = predict(white.bayes, test.white.x, type="class")
-# test accuracy on the test set
-bayes_acc = mean(bayes_predict == ifelse(test.white.x$quality > 6, 1,0))
-str(white.bayes)
+# #---------------------------
+# # Naive Bayes
+# #---------------------------
+# 
+# set.seed(1)
+# # learn naive bayes classifier on th train set
+# white.bayes = naiveBayes(quality ~., data=log.x)
+# print(white.bayes)
+# # predict on test set
+# bayes_predict = predict(white.bayes, test.white.x, type="class")
+# # test accuracy on the test set
+# bayes_acc = mean(bayes_predict == ifelse(test.white.x$quality > 6, 1,0))
+# str(white.bayes)
 #---------------------------
 # PCA
 #---------------------------
 white.pca <- prcomp(wine.white[1:11], center = TRUE,scale. = TRUE)
 str(white.pca)
-#plot(white.pca$rotation[,"PC1"],white.pca$rotation[,"PC2"] )
-plot(x=white.pca$x[,"PC1"], y=white.pca$x[,"PC2"], xlab="PC1", ylab="PC2", col=wine.white$quality)#, xlim=c(-0.6, 0.6))#, ylim=c(-.7, .7))
-arrows(x0=rep(0,12), y0=rep(0,12), x1=white.pca$rotation[,"PC1"]*15, y1=white.pca$rotation[,"PC2"]*15, xlab="PC1", ylab="PC2")
-text(x=white.pca$rotation[,"PC1"]*15-.45, y=white.pca$rotation[,"PC2"]*15+.45, labels=colnames(wine.white)[1:11])
+
+plot(x=white.pca$x[,"PC1"], y=white.pca$x[,"PC2"], xlab="PC1", ylab="PC2", col=wine.white$quality)
+arrows(x0=rep(0,12), y0=rep(0,12), x1=white.pca$rotation[,"PC1"]*10, y1=white.pca$rotation[,"PC2"]*10, xlab="PC1", ylab="PC2")
+text(x=white.pca$rotation[,"PC1"]*10-.45, y=white.pca$rotation[,"PC2"]*10+.45, labels=colnames(wine.white)[1:11])
 title("PCA on normalized data")
 #---------------------------
-# task b) Append a) to winequality.red 
+# task b) Apply a) on red wine data set
 #---------------------------
 #str(wine.red), 
 #summary(wine.red)
@@ -420,17 +414,74 @@ train.red.y = factor(train.red.y)
 test.red.y = factor(test.red.y)
 log.x = train.red.x
 log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
-# log.x$quality = as.numeric(log.x$quality)
-# 
-# log.x[log.x$quality >6, "quality"] = 1
-# log.x[log.x$quality <= 6,"quality"] = 0
-# glm.pred[glm.probs > .5] <- "1"
+
 
 set.seed (1)
 glm.model.red= glm(quality~.,data= log.x, family = "binomial")
 glm.probs = predict (glm.model.red, test.red.x, type="response")
+glm.probs.train = predict (glm.model.red, train.red.x, type="response")
 glm.probs[which(glm.probs > .5)] = 1
 glm.probs[which(glm.probs <= .5)] = 0
+glm.probs.train[which(glm.probs.train > .5)] = 1
+glm.probs.train[which(glm.probs.train <= .5)] = 0
 table(glm.probs, test.red.x$quality > 6)
+glm.acc.red = mean(glm.probs == ifelse(test.red.x$quality >6 , 1, 0))
+glm.acc.red.train = mean(glm.probs.train == ifelse(train.red.x$quality >6 , 1, 0))
 summary(glm.model.red)
+print(glm.acc.red)
+print(glm.acc.red.train)
+#---------------------------
+# Tree
+#----------------------------
 
+set.seed (1)
+log.red.x = train.red.x
+log.red.x["quality"] = ifelse(log.red.x$quality > 6, 1,0)
+tree.wine.cat.red = tree(factor(quality)~.,data=log.red.x )
+plot(tree.wine.cat.red)
+text(tree.wine.cat.red)
+tree.predict.red  = predict(tree.wine.cat.red, test.red.x, type="class")
+table(tree.predict.red, test.red.x$quality > 6)
+tree.cat.acc.red = mean(tree.predict.red == ifelse(test.red.x$quality > 6, 1,0))
+print(tree.cat.acc.red)
+
+#---------------------------
+# Random forest with categories
+#----------------------------
+
+# random forest with categories
+set.seed (1)
+rf.cat.accs.red.mtry = c()
+mdg.red = c()
+for (i in 1:11){
+  rf.cat.wine.red = randomForest(factor(quality) ~ ., mtry = i, data= log.red.x, importance=TRUE)
+  mdg.red = append(mdg.red, rf.cat.wine.red$importance[,"MeanDecreaseGini"])
+  rf.cat.predict.red = predict(rf.cat.wine.red, test.red.x)
+  table(rf.cat.predict.red, test.red.x$quality > 6)
+  rf.cat.acc.red = mean(rf.cat.predict.red == ifelse(test.red.x$quality > 6, 1,0))
+  rf.cat.accs.red.mtry = append(rf.cat.accs.red.mtry, rf.cat.acc.red)
+}
+
+rf.cat.wine.red = randomForest(factor(quality) ~ ., data= log.red.x, importance=TRUE)
+
+varImpPlot(rf.cat.wine.red)
+
+
+rf.cat.accs.red.ntree  = c()
+for (i in c(100,200,500,1000,2000)){
+  rf.cat.wine.red = randomForest(factor(quality) ~ ., ntree=i, data= log.x, importance=TRUE)
+  # print(rf.cat.wine.red$importance[,"MeanDecreaseGini"])
+  rf.cat.predict.red = predict(rf.cat.wine.red, test.red.x)
+  table(rf.cat.predict.red, test.red.x$quality > 6)
+  rf.cat.acc.red = mean(rf.cat.predict.red == ifelse(test.red.x$quality > 6, 1,0))
+  rf.cat.accs.red.ntree = append(rf.cat.accs.red.ntree, rf.cat.acc.red)
+}
+rf.cat.wine.red = randomForest(factor(quality) ~ .,data = log.red.x, importance=TRUE)
+table(rf.cat.predict.red, test.red.x$quality > 6)
+par(mfrow=c(1,2))
+plot(rf.cat.accs.red.mtry,ylim=c(0,1), ylab="Accuracy", xlab="mtry")
+title("Accuracy dependent on mtry")
+plot(c(100,200,500,1000,2000), rf.cat.accs.red.ntree,ylim=c(0,1), ylab="Accuracy", xlab="ntree")
+title("Accuracy dependent on ntree")
+
+varImpPlot(rf.cat.wine.red)
