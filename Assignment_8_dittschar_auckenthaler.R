@@ -15,6 +15,8 @@ wine.red =  read.csv("../winequality-red.csv",sep = ";")
 #inspect dataframe
 str(wine.white)
 summary(wine.white)
+
+summary(wine.red)
 #Check is data has nan values
 dim(wine.white)
 sum(is.na(wine.white))
