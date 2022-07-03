@@ -425,6 +425,7 @@ log.x$quality = ifelse (as.integer(log.x$quality) > 6, 1, 0)
 # log.x[log.x$quality >6, "quality"] = 1
 # log.x[log.x$quality <= 6,"quality"] = 0
 # glm.pred[glm.probs > .5] <- "1"
+
 set.seed (1)
 glm.model.red= glm(quality~.,data= log.x, family = "binomial")
 glm.probs = predict (glm.model.red, test.red.x, type="response")
