@@ -35,16 +35,19 @@ barplot(dist.white.wine, xlab= "Quality of white wines", ylab="Number of white w
 #Linear Correlation
 #---------------------
 cor.val= cor(wine.white)
+cor.val
 #uniq.white= unique(wine.white$quality)
 #len.uniq.white=length(unique(wine.white$quality))
 #palette()[1:(length(unique(wine.white$quality)))]
 #pairs(wine.white[1:(ncol(wine.white)-1)],main = "Correlation Matrix for white wine data",pch = 21,bg = c(palette()[1:(length(unique(wine.white$quality)))])[unclass(wine.white$quality)])
 cor.white= cor(wine.white [1:(ncol(wine.white)-1)],wine.white$quality )
-
+cor.white
 #heatmap
 col= colorRampPalette(c("blue", "white", "red"))(256)
 heatmap(cor.val , Colv = NA, Rowv = NA,col=col, main= "Correlation Heatmap white wine", margins = c(10,10), xlab="Variables", ylab="Variables")
 legend(x="left", legend=c("-1", "0", "1"),fill=c("blue", "white", "red"))
+
+
 
 #boxplot
 boxplot(wine.white[1:(ncol(wine.white)-1)])
@@ -311,6 +314,9 @@ dist.red.wine
 barplot(dist.red.wine, xlab= "Quality of red wine", ylab="Number of red wines",ylim = c(0,700))
 
 cor.red= cor(wine.red)
+cor.red
+cor.red.q= cor(wine.red [1:(ncol(wine.red)-1)],wine.red$quality )
+cor.red.q
 heatmap(cor.red , Colv = NA, Rowv = NA,col=col, main= "Correlation Heatmap red wine", margins = c(10,10), xlab="Variables", ylab="Variables")
 legend(x="left", legend=c("-1", "0", "1"),fill=c("blue", "white", "red"))
 # 
