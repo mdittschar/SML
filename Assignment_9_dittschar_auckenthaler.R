@@ -11,6 +11,15 @@ library (e1071)
 frog.train = read.csv("../AnuranCalls_train.csv",sep = ",")
 frog.test  =  read.csv("../AnuranCalls_test.csv",sep = ",")
 
+#MCC function 
+MCC=function(confusion.matrix){
+  TP= confusion.matrix
+  error = (arr - arr_pred)^2
+  sum_err = sum(error)
+  mse = weight*sum_err
+  print(mse)
+}
+
 #----------------
 # inspection of dataset
 #----------------
@@ -65,6 +74,7 @@ acc.glm
 set.seed (1)
 tree = tree(Family~.,data= train)
 plot(tree)
+text(tree)
 tree.predict  = predict(tree, test, type="class")
 table(tree.predict)
 #accuracy
@@ -211,10 +221,36 @@ tab.smv.p
 acc.svm.p= mean((predict(tune.out.p$best.model,newdata = test))== test$Family)
 acc.svm.p
 
+acc.rf.all= mean((predict(rf.best, frog.train))==frog.train$Family)
+
+#test on whole trainingsset
+
+#svm with polynomial kernel
+acc.svm.p.all= mean((predict(tune.out.p$best.model,newdata = frog.train))== frog.train$Family)
+acc.svm.p.all
+
+#random forest with tuned mtry
+acc.rf.all= mean((predict(tune.out.p$best.model,newdata = frog.train))== frog.train$Family)
+acc.rf.all
+
+#bagging
+acc.bag.all = mean((predict(bag, newdata = frog.train))== frog.train$Family)
+acc.bag.all
+
+#tree
+acc.tree.all = mean((predict(tree, newdata = frog.train, type="class"))== frog.train$Family)
+acc.tree.all
+
+
 #------------------------------------
 #b) best model on test data
 #------------------------------------
 
 pred.best = predict(rf.best, frog.test)
-write.table(pred.best, file = "dittschar_auckenthaler_test_response.txt", sep = "\t",
-            row.names = FALSE, col.names = NA)
+
+write.table(pred.best, file = "dittschar_auckenthaler_test_response.txt", sep = "\t", col.names = FALSE, row.names = FALSE, quote= FALSE)
+
+dist.frogfam.test <-table(pred.best)
+barplot(dist.frogfam.test, xlab= "Family of frog", ylab="Number of observation predicted test set")
+
+  
