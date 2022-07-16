@@ -31,7 +31,7 @@ tab.2 = table(c1.1,c2.1)
 RandIndex(c1,c2)
 RandIndex(c1.1,c2.1)
 
-#libary function 
+#library function 
 randIndex(tab, correct=TRUE, original=TRUE)
 randIndex(tab.2, correct=TRUE, original=TRUE)
 
@@ -64,7 +64,7 @@ multicutree=function(x,k, d){
   print(ri)
   return(cutree.out)
 }
-# loop to get matrixes for diffrent number of clusters
+# loop to get matrices for different number of clusters
 
 for (k in 2:6){
   set.seed(1)
@@ -117,7 +117,7 @@ for (k in 2:6){
 #------------------
 # c) randIndex from the flexclust-package (
 #------------------
-# see above function multcutree!!
+# see above function multicutree!!
 
 
 #------------------
@@ -126,9 +126,10 @@ for (k in 2:6){
 
 ks= c()
 w_k= c()
+
 for (k in 2:20){
   set.seed (1)
-  km.out = kmeans (data[,3:ncol(data)], k, nstart = 25)
+  km.out = kmeans (data[,3:ncol(data)], k, iter.max=50,nstart = 25)
   ks= append(ks,k)
   w_k= append(w_k,km.out$tot.withinss)
 }
@@ -238,9 +239,6 @@ print(tab.c)
 ri= randIndex(tab.c)
 print(ri)
 
-#------------------
-# f) 
-#------------------
 
 #------------------
 # g) tsne
