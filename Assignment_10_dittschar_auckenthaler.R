@@ -64,54 +64,56 @@ multicutree=function(x,k, d){
   print(ri)
   return(cutree.out)
 }
-# loop to get matrices for different number of clusters
+
 
 for (k in 2:6){
   set.seed(1)
   cu.tree= multicutree(hc.average,k,data)
   #print(cu.tree)
   
-  if(k==3){
-    cu.tree[cu.tree==1]= 'B'
-    cu.tree[cu.tree==2|cu.tree==3]= 'M'
-    #print(cu.tree)
-    tab.c= table(cu.tree,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
   
-  else if(k==4){
-    cu.tree[cu.tree==1]= 'B'
-    cu.tree[cu.tree==2|cu.tree==3|cu.tree==4]= 'M'
+ # tried to assign subclusters to "B" or "M" but is the wrong approach
+  #if(k==3){
+   # cu.tree[cu.tree==1]= 'B'
+    #cu.tree[cu.tree==2|cu.tree==3]= 'M'
     #print(cu.tree)
-    tab.c= table(cu.tree,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else if(k==5){
-    cu.tree[cu.tree==1|cu.tree==3|cu.tree==4|cu.tree==5]= 'M'
-    cu.tree[cu.tree==2]= 'B'
+    #tab.c= table(cu.tree,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  
+  #else if(k==4){
+   # cu.tree[cu.tree==1]= 'B'
+    #cu.tree[cu.tree==2|cu.tree==3|cu.tree==4]= 'M'
     #print(cu.tree)
-    tab.c= table(cu.tree,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else if(k==6){
-    cu.tree[cu.tree==1|cu.tree==3|cu.tree==4|cu.tree==5|cu.tree==6]= 'M'
-    cu.tree[cu.tree==2]= 'B'
+    #tab.c= table(cu.tree,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else if(k==5){
+   # cu.tree[cu.tree==1|cu.tree==3|cu.tree==4|cu.tree==5]= 'M'
+    #cu.tree[cu.tree==2]= 'B'
+    #print(cu.tree)
+    #tab.c= table(cu.tree,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else if(k==6){
+   # cu.tree[cu.tree==1|cu.tree==3|cu.tree==4|cu.tree==5|cu.tree==6]= 'M'
+    #cu.tree[cu.tree==2]= 'B'
    # print(cu.tree)
-    tab.c= table(cu.tree,factor(data$M))
+    #tab.c= table(cu.tree,factor(data$M))
     #print(factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else{
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else{
      
-  }
+  #}
 }
 
 #------------------
@@ -164,43 +166,43 @@ plot (hc.average.s , main = " Average Linkage ",xlab = "", sub = "", cex = .9)
 for (k in 2:6){
   set.seed(1)
   cu.tree.s=multicutree(hc.average.s,k,data)
+  # tried to assign subclusters to "B" or "M" but is the wrong approach
+# if(k==3){
+ #   cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
+  #  cu.tree.s[cu.tree.s==3]= 'M'
+   # tab.c= table(cu.tree.s,factor(data$M))
+  #  print(tab.c)
+   # ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+  #  print(ri)
+  #}
   
-  if(k==3){
-    cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
-    cu.tree.s[cu.tree.s==3]= 'M'
-    tab.c= table(cu.tree.s,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  
-  else if(k==4){
-    cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
-    cu.tree.s[cu.tree.s==3|cu.tree.s==4]= 'M'
-    tab.c= table(cu.tree.s,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else if(k==5){
-    cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
-    cu.tree.s[cu.tree.s==3|cu.tree.s==4|cu.tree.s==5]= 'M'
-    tab.c= table(cu.tree.s,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else if(k==6){
-    cu.tree.s[cu.tree.s==1|cu.tree.s==3]= 'B'
-    cu.tree.s[cu.tree.s==2|cu.tree.s==4|cu.tree.s==5|cu.tree.s==6]= 'M'
-    tab.c= table(cu.tree.s,factor(data$M))
-    print(tab.c)
-    ri= randIndex(tab.c, correct=TRUE, original=TRUE)
-    print(ri)
-  }
-  else{
+  #else if(k==4){
+   # cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
+    #cu.tree.s[cu.tree.s==3|cu.tree.s==4]= 'M'
+    #tab.c= table(cu.tree.s,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else if(k==5){
+   # cu.tree.s[cu.tree.s==1|cu.tree.s==2]= 'B'
+    #cu.tree.s[cu.tree.s==3|cu.tree.s==4|cu.tree.s==5]= 'M'
+    #tab.c= table(cu.tree.s,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else if(k==6){
+   # cu.tree.s[cu.tree.s==1|cu.tree.s==3]= 'B'
+    #cu.tree.s[cu.tree.s==2|cu.tree.s==4|cu.tree.s==5|cu.tree.s==6]= 'M'
+    #tab.c= table(cu.tree.s,factor(data$M))
+    #print(tab.c)
+    #ri= randIndex(tab.c, correct=TRUE, original=TRUE)
+    #print(ri)
+  #}
+  #else{
     
-  }
+  #}
 }
 
 ks.s= c()
